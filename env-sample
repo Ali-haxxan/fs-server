@@ -1,0 +1,17 @@
+APP_CODE=fs-server
+APP_NAME=Fleetsol Services Backend
+ENV=dev
+HOST_NAME=localhost
+PORT=3001
+SSL_Enabled_domain=
+
+API_ROOT=/api/1.0.0
+
+MONGODB_HOST=127.0.0.1
+MONGODB_PORT=27017
+MONGODB_NAME=FS-DB
+MONGODB_PASSWD=
+
+LOG_TO_CONSOLE=true
+JWT_SECRETKEY=supersecret_dont_share
+MORGAN_FORMAT=combined
