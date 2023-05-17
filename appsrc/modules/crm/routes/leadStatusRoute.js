@@ -20,22 +20,22 @@ const router = express.Router();
 const baseRoute = `/leadStatus`;
 // router.use(checkAuth);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
-router.get(`${baseRoute}/:id`, checkSecurityUserID, controller.getLeadStatus);
+// - /api/1.0.0/crm/leadStatus/:securityUserID/lead/:id
+router.get(`${baseRoute}/:id`,  controller.getLeadStatus);
 
-// - /api/1.0.0/crm/Leads/:LeadId/lead/
-router.get(`${baseRoute}/`, checkSecurityUserID, controller.getLeadStatuses);
+// - /api/1.0.0/crm/leadStatus/:securityUserID/lead/
+router.get(`${baseRoute}/`,  controller.getLeadStatuses);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/
+// - /api/1.0.0/crm/leadStatus/:securityUserID/lead/
 router.post(`${baseRoute}/`, controller.postLeadStatus);
 
-// - /api/1.0.0/crm/Leads/:LeadId/lead/:id
-router.patch(`${baseRoute}/:id`, checkSecurityUserID, controller.patchLeadStatus);
+// - /api/1.0.0/crm/leadStatus/:securityUserID/lead/:id
+router.patch(`${baseRoute}/:id`,  controller.patchLeadStatus);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
-router.delete(`${baseRoute}/:id`, checkSecurityUserID, controller.deleteLeadStatus);
+// - /api/1.0.0/crm/leadStatus/:securityUserID/lead/:id  checkSecurityUserID,
+router.delete(`${baseRoute}/:id`,  controller.deleteLeadStatus);
 
-// - /api/1.0.0/crm/leads/search
+// - /api/1.0.0/crm/leadStatus/search
 router.get(`/leads/search`, controller.searchLeadStatus);
 
 module.exports = router;

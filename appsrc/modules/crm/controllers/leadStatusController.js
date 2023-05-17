@@ -36,6 +36,7 @@ exports.getLeadStatus = async (req, res, next) => {
 };
 
 exports.getLeadStatuses = async (req, res, next) => {
+  console.log("first")
   this.query = req.query != "undefined" ? req.query : {};  
   this.securityUserID = req.params.securityUserID;
   this.query.user = this.securityUserID; 
@@ -66,9 +67,9 @@ exports.searchLeadStatus = async (req, res, next) => {
 
 exports.deleteLeadStatus = async (req, res, next) => {
   let id = req.params.id;
-  if(req.params.id && req.params.securityUserID) {
-    let LeadStatus = await LeadStatus.findOne({_id:req.params.id, user:req.params.securityUserID});
-    if(LeadStatus) {
+  if(req.params.id) {
+    let Status = await LeadStatus.findOne({_id:req.params.id});
+    if(Status) {
       this.dbservice.deleteObject(LeadStatus, req.params.id, callbackFunc);
       function callbackFunc(error, result) {
         if (error) {
@@ -89,9 +90,6 @@ exports.deleteLeadStatus = async (req, res, next) => {
 };
 
 exports.postLeadStatus = async (req, res, next) => {
-  await body('email')
-  .isEmail().withMessage('Invalid email format')
-  .run(req);
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -103,17 +101,13 @@ exports.postLeadStatus = async (req, res, next) => {
         logger.error(new Error(error));
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
       } else {
-        res.status(StatusCodes.CREATED).json({ customerCategory: response });
+        res.status(StatusCodes.CREATED).json( response );
       }
     }
   }
 };
 
 exports.patchLeadStatus = async (req, res, next) => {
-  await body('email')
-  .isEmail().withMessage('Invalid email format')
-  .run(req);
-  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
@@ -133,10 +127,7 @@ exports.patchLeadStatus = async (req, res, next) => {
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
-              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
-                error
-                //getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR)
-                );
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
             } else {
               res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
             }
@@ -175,11 +166,11 @@ function getDocumentFromReq(req, reqType){
 
 
   if (reqType == "new" && "loginUser" in req.body ){
-    doc.createdBy = loginUser.userId;
-    doc.updatedBy = loginUser.userId;
+    doc.createdBy = req.params.SecurityUserId;
+    doc.updatedBy = req.params.SecurityUserId;
     doc.createdIP = loginUser.userIP;
   } else if ("loginUser" in req.body) {
-    doc.updatedBy = loginUser.userId;
+    doc.updatedBy = req.params.SecurityUserId;
     doc.updatedIP = loginUser.userIP;
   } 
   return doc;

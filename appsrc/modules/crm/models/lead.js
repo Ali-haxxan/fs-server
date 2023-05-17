@@ -7,10 +7,10 @@ const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
         
-        user: { type: Schema.Types.ObjectId, ref: 'securityUser', required: true},
+        user: { type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true},
         // guid of lead from leads collection.
 
-        lead: { type: Schema.Types.ObjectId, ref: 'lead', required: true},
+        lead: { type: Schema.Types.ObjectId, ref: 'LeadStatus', required: true},
         // guid of lead from leads collection.
         
         businessName: { type: String, required: true},

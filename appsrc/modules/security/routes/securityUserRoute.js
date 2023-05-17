@@ -31,11 +31,11 @@ router.post(`${baseRoute}/`, controller.postSecurityUser);
 // - /api/1.0.0/security/users/:id
 router.patch(`${baseRoute}/:id`,  controller.patchSecurityUser);
 
-// - /api/1.0.0/security/users/updatePassword/:id
-router.patch(`${baseRoute}/updatePassword/:id`,  controller.patchSecurityUser);
+// - /api/1.0.0/security/users/password
+router.patch(`${baseRoute}/updatePassword/:id`,  controller.patchSecurityUserPassword);
 
 // - /api/1.0.0/security/users/passwordUpdateByAdmin
-router.patch(`${baseRoute}/passwordUpdateByAdmin`,  controller.updatePasswordByAdmin);
+router.post(`${baseRoute}/passwordUpdateByAdmin`,  controller.patchPasswordByAdmin);
 
 // - /api/1.0.0/security/users/:id
 router.delete(`${baseRoute}/:id`,  controller.deleteSecurityUser);

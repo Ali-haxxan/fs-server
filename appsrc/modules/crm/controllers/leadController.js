@@ -13,6 +13,7 @@ let rtnMsg = require('../../config/static/static')
 let LeadDBService = require('../service/leadDBService')
 this.dbservice = new LeadDBService();
 const { Lead} = require('../models');
+
 this.debug = process.env.LOG_TO_CONSOLE != null && process.env.LOG_TO_CONSOLE != undefined ? process.env.LOG_TO_CONSOLE : false;
 
 this.fields = {};
@@ -20,8 +21,12 @@ this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
                 {path: 'user', select: 'name'},
+                {path: 'lead', select: 'name'},
                 {path: 'createdBy', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
+                ];
+this.populateList = [
+                  {path: 'roles', select: 'name'},
                 ];
 
 exports.getLead= async (req, res, next) => {
@@ -37,9 +42,16 @@ exports.getLead= async (req, res, next) => {
 };
 
 exports.getLeads = async (req, res, next) => {
-  this.query = req.query != "undefined" ? req.query : {};  
-  this.securityUserID = req.params.securityUserID;
-  this.query.user = this.securityUserID; 
+  // this.query = req.query != "undefined" ? req.query : {};  
+  // this.securityUserID = req.params.securityUserID;
+  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
+  // let user = this.dbservice.getObjectById(SecurityUser, this.fields, req.params.securityUserID, this.populateList, callbackFunc);
+  console.log("user : ", user);
+
+  // this.dbservice.getObjectById(Lead, this.fields, req.params.securityUserID, this.populate, callbackFunc);
+  if(user?.roles?.readAccess === false){
+    this.query.user = req.params.securityUserID;
+  }
   this.dbservice.getObjectList(Lead, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
@@ -90,10 +102,6 @@ exports.deleteLead= async (req, res, next) => {
 };
 
 exports.postLead= async (req, res, next) => {
-  await body('email')
-  .isEmail().withMessage('Invalid email format')
-  .run(req);
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
@@ -104,7 +112,7 @@ exports.postLead= async (req, res, next) => {
         logger.error(new Error(error));
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
       } else {
-        res.status(StatusCodes.CREATED).json({ customerCategory: response });
+        res.status(StatusCodes.CREATED).json({ lead: response });
       }
     }
   }
@@ -151,16 +159,20 @@ exports.patchLead= async (req, res, next) => {
 };
 
 function getDocumentFromReq(req, reqType){
-  const { firstName, lastName, title, phone, email, sites, lat, long, note, address,
+  const { lead, businessName, firstName, lastName, phone, alternatePhone, email, appoinmentDate, lat, long, note, address,
     isActive, isArchived, loginUser } = req.body;
   let doc = {};
   if (reqType && reqType == "new"){
     doc = new Lead({});
   }
-  if (req.params){
+  if (req.params.securityUserID){
     doc.user = req.params.securityUserID;
-  }else{
-    doc.user = req.body.user;
+  }
+  if ("lead" in req.body){
+    doc.lead = lead;
+  }
+  if ("businessName" in req.body){
+    doc.businessName = businessName;
   }
   if ("firstName" in req.body){
     doc.firstName = firstName;
@@ -168,20 +180,17 @@ function getDocumentFromReq(req, reqType){
   if ("lastName" in req.body){
     doc.lastName = lastName;
   }
-  if ("title" in req.body){
-    doc.title = title;
-  }
   if ("phone" in req.body){
     doc.phone = phone;
+  }
+  if ("alternatePhone" in req.body){
+    doc.alternatePhone = alternatePhone;
   }
   if ("email" in req.body){
     doc.email = email;
   }
-  if ("sites" in req.body){
-    doc.sites = sites;
-  }
-  if ("address" in req.body){
-    doc.address = address;
+  if ("appoinmentDate" in req.body){
+    doc.appoinmentDate = appoinmentDate;
   }
   if ("isActive" in req.body){
     doc.isActive = isActive;
@@ -200,11 +209,11 @@ function getDocumentFromReq(req, reqType){
   }
 
   if (reqType == "new" && "loginUser" in req.body ){
-    doc.createdBy = loginUser.userId;
-    doc.updatedBy = loginUser.userId;
+    doc.createdBy = req.params.securityUserID;
+    doc.updatedBy = req.params.securityUserID;
     doc.createdIP = loginUser.userIP;
   } else if ("loginUser" in req.body) {
-    doc.updatedBy = loginUser.userId;
+    doc.updatedBy = req.params.securityUserID;
     doc.updatedIP = loginUser.userIP;
   } 
 

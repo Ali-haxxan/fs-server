@@ -21,22 +21,22 @@ const baseRoute = `/lead`;
 
 // router.use(checkAuth);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/contacts/:id
-router.get(`${baseRoute}/:id`, checkSecurityUserID,controller.getLead);
+// - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
+router.get(`${baseRoute}/:id`, controller.getLead);
 
-// - /api/1.0.0/crm/Leads/:LeadId/contacts/
-router.get(`${baseRoute}/`, checkSecurityUserID, controller.getLeads);
+// - /api/1.0.0/crm/Leads/:securityUserID/lead/
+router.get(`${baseRoute}/:securityUserID/lead/`,  controller.getLeads);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/contacts/
-router.post(`${baseRoute}/`, checkSecurityUserID,controller.postLead);
+// - /api/1.0.0/crm/Leads/:securityUserID/lead/
+router.post(`${baseRoute}/`, controller.postLead);
 
-// - /api/1.0.0/crm/Leads/:LeadId/contacts/:id
-router.patch(`${baseRoute}/:id`, checkSecurityUserID, controller.patchLead);
+// - /api/1.0.0/crm/Leads/:LeadId/:securityUserID/:id
+router.patch(`${baseRoute}/:id`,  controller.patchLead);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/contacts/:id
-router.delete(`${baseRoute}/:id`, checkSecurityUserID, controller.deleteLead);
+// - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
+router.delete(`${baseRoute}/:id`,  controller.deleteLead);
 
-// - /api/1.0.0/crm/contacts/search
+// - /api/1.0.0/crm/leads/search
 router.get(`/contacts/search`, controller.searchLeads);
 
 

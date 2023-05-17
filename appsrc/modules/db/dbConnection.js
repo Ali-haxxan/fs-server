@@ -15,6 +15,7 @@ let dburl = `mongodb://${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/$
 
 if (process.env.MONGODB_HOST_TYPE && process.env.MONGODB_HOST_TYPE == "mongocloud"){
     dburl = `mongodb+srv://${ process.env.MONGODB_USERNAME }:${ process.env.MONGODB_PASSWD }@${ process.env.MONGODB_HOST }/${ process.env.MONGODB_NAME }?etryWrites=true&w=majority`;
+    // mongodb+srv://bc170400035:<password>@cluster0.atbhfa1.mongodb.net/
 }
 
 //console.log('dburl: ' + dburl);
