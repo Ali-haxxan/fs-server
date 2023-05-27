@@ -9,7 +9,7 @@ const docSchema = new Schema({
         user: { type: Schema.Types.ObjectId, ref: 'SecurityUser' },
         // guid of customer from customers collection.
         
-        name: { type: String, required: true },
+        name: { type: String, unique: true, required: true },
         // This will be used to handle any kind of comments or notes against any above field
         
         description: { type: String, required: true },

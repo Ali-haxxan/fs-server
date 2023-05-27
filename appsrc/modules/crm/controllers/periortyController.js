@@ -12,7 +12,7 @@ let rtnMsg = require('../../config/static/static')
 
 let LeadDBService = require('../service/leadDBService')
 this.dbservice = new LeadDBService();
-const { Lead} = require('../models');
+const { Periorty } = require('../models');
 
 this.debug = process.env.LOG_TO_CONSOLE != null && process.env.LOG_TO_CONSOLE != undefined ? process.env.LOG_TO_CONSOLE : false;
 
@@ -20,19 +20,13 @@ this.fields = {};
 this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
-                {path: 'user', select: 'name'},
-                {path: 'lead', select: 'name'},
-                {path: 'status', select: 'name'},
-                {path: 'periorty', select: 'name'},
                 {path: 'createdBy', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
                 ];
-this.populateList = [
-                  {path: 'roles', select: 'name'},
-                ];
+this.populateList = [];
 
-exports.getLead= async (req, res, next) => {
-  this.dbservice.getObjectById(Lead, this.fields, req.params.id, this.populate, callbackFunc);
+exports.getPeriorty= async (req, res, next) => {
+  this.dbservice.getObjectById(Periorty, this.fields, req.params.id, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -43,13 +37,9 @@ exports.getLead= async (req, res, next) => {
   }
 };
 
-exports.getLeads = async (req, res, next) => {
-  this.securityUserID = req.params.securityUserID;
-  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
-  if(user?.roles?.readAccess === false){
-    this.query.user = this.securityUserID;
-  }
-  this.dbservice.getObjectList(Lead, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
+exports.getPeriorties = async (req, res, next) => {
+
+  this.dbservice.getObjectList(Periorty, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -60,13 +50,9 @@ exports.getLeads = async (req, res, next) => {
   }
 };
 
-exports.searchLeads = async (req, res, next) => {
-  this.securityUserID = req.params.securityUserID;
-  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
-  if(user?.roles?.readAccess === false){
-    this.query.user = this.securityUserID;
-  }
-  this.dbservice.getObjectList(Lead, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
+exports.searchPeriorties = async (req, res, next) => {
+  this.query = req.query != "undefined" ? req.query : {};
+  this.dbservice.getObjectList(Periorty, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -78,11 +64,11 @@ exports.searchLeads = async (req, res, next) => {
 };
 
 
-exports.deleteLead= async (req, res, next) => {
-  if(req.params.id && req.params.securityUserID) {
-    let lead= await Lead.findOne({_id:req.params.id, user:req.params.securityUserID});
-    if(lead) {
-      this.dbservice.deleteObject(Lead, req.params.id, callbackFunc);
+exports.deletePeriorty= async (req, res, next) => {
+  if(req.params.id ) {
+    let periorty= await Periorty.findOne({_id:req.params.id});
+    if(periorty) {
+      this.dbservice.deleteObject(Periorty, req.params.id, callbackFunc);
       function callbackFunc(error, result) {
         if (error) {
           logger.error(new Error(error));
@@ -101,7 +87,7 @@ exports.deleteLead= async (req, res, next) => {
   }
 };
 
-exports.postLead= async (req, res, next) => {
+exports.postPeriorty= async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
@@ -112,33 +98,27 @@ exports.postLead= async (req, res, next) => {
         logger.error(new Error(error));
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
       } else {
-        res.status(StatusCodes.CREATED).json({ lead: response });
+        res.status(StatusCodes.CREATED).json({ Periorty: response });
       }
     }
   }
 };
 
-exports.patchLead= async (req, res, next) => {
-  await body('email')
-  .isEmail().withMessage('Invalid email format')
-  .run(req);
-  
+exports.patchPeriorty= async (req, res, next) => {
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } else {
     var _this = this;
-    this.query = req.query != "undefined" ? req.query : {}; 
-    this.query.user = req.params.securityUserID;
-    this.query._id = req.params.id;
-    this.dbservice.getObject(Lead, this.query, this.populate, getObjectCallback);
+    this.dbservice.getObject(Periorty, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
       if (error) {
         logger.error(new Error(error));
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
       } else { 
         if(!(_.isEmpty(response))){
-          _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
+          _this.dbservice.patchObject(Periorty, req.params.id, getDocumentFromReq(req), callbackFunc);
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
@@ -159,68 +139,16 @@ exports.patchLead= async (req, res, next) => {
 };
 
 function getDocumentFromReq(req, reqType){
-  const { user, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
-     status, streetAddress, aptSuite, city, postCode, country, lat, long, isActive, isArchived, loginUser } = req.body;
+  const { user, name, isActive, isArchived, loginUser } = req.body;
   let doc = {};
   if (reqType && reqType == "new"){
-    doc = new Lead({});
+    doc = new Periorty({});
   }
-  if (req.params.securityUserID){
-    doc.user = req.params.securityUserID;
+  if("user" in req.body){
+    doc.user = req.body.user;
   }
-  if ("user" in req.body){
-    doc.user = user;
-  }
-  if ("firstName" in req.body){
-    doc.firstName = firstName;
-  }
-  if ("lastName" in req.body){
-    doc.lastName = lastName;
-  }
-  if ("businessName" in req.body){
-    doc.businessName = businessName;
-  }
-  if ("phone" in req.body){
-    doc.phone = phone;
-  }
-  if ("alternatePhone" in req.body){
-    doc.alternatePhone = alternatePhone;
-  }
-  if ("email" in req.body){
-    doc.email = email;
-  }
-  if ("appoinmentDate" in req.body){
-    doc.appoinmentDate = appoinmentDate;
-  }
-  if("periorty" in req.body){
-    doc.periorty = periorty;
-  }
-  if ("note" in req.body){
-    doc.note = note;
-  }
-  if("status" in req.body){
-    doc.status = status;
-  }
-  if("streetAddress" in req.body){
-    doc.streetAddress = streetAddress;
-  }
-  if("aptSuite" in req.body){
-    doc.aptSuite = aptSuite;
-  }
-  if("city" in req.body){
-    doc.city = city;
-  }
-  if("postCode" in req.body){
-    doc.postCode = postCode;
-  }
-  if("country" in req.body){
-    doc.country = country;
-  }
-  if ("lat" in req.body){
-    doc.lat = lat;
-  }
-  if ("long" in req.body){
-    doc.long = long;
+  if ("name" in req.body){
+    doc.name = name;
   }
   if ("isActive" in req.body){
     doc.isActive = isActive;

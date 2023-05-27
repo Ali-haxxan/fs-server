@@ -9,10 +9,9 @@ const docSchema = new Schema({
         
         user: { type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true},
         // guid of lead from leads collection.
+        periorty: { type: Schema.Types.ObjectId, ref: 'Periorty', required: true},
+        // periorty of lead (high, low or medium)
 
-        lead: { type: Schema.Types.ObjectId, ref: 'LeadStatus', required: true},
-        // guid of lead from leads collection.
-        
         businessName: { type: String, required: true},
         // Business name of contact person firm
 
@@ -29,8 +28,26 @@ const docSchema = new Schema({
         // phone/mobile numbers.
         
         email: { type: String },
-        // Email addresses. There can be multiple comma separated entries
+        // Email addresses. 
+
+        streetAdress: { type: String },
+        //
+
+        aptSuite: { type: String },
+        //
+
+        city: { type: String },
+        //
+
+        postCode: { type: String },
+        //
+
+        country: { type: String },
+        //
         
+        status: { type: Schema.Types.ObjectId, ref: 'LeadStatus', required: true},
+        // guid of lead from leads collection.
+
         appoinmentDate: { type : Date, default: Date.now },
         // lead contact note .
         

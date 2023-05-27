@@ -9,7 +9,7 @@ const checkSecurityUserID = require('../../../middleware/check-parentID')('secur
 
 
 const controllers = require('../controllers');
-const controller = controllers.leadController;
+const controller = controllers.periortyController;
 
 const router = express.Router();
 
@@ -17,27 +17,25 @@ const router = express.Router();
 // - /api/1.0.0/crm/Leads
 
 // - /api/1.0.0/crm/Leads/:securityUserID/contacts
-const baseRoute = `/lead`;
+const baseRoute = `/periorty`;
 
 // router.use(checkAuth);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
-router.get(`${baseRoute}/:id`, controller.getLead);
+// - /api/1.0.0/crm/Periorty/:securityUserID/lead/:id
+router.get(`${baseRoute}/:id`, controller.getPeriorty);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.get(`${baseRoute}/:securityUserID/lead/`,  controller.getLeads);
+// - /api/1.0.0/crm/Periorty/:securityUserID/lead/
+router.get(`${baseRoute}/`,  controller.getPeriorties);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.post(`${baseRoute}/:securityUserID/lead/`, controller.postLead);
+// - /api/1.0.0/crm/Periorty/:securityUserID/lead/
+router.post(`${baseRoute}/`, controller.postPeriorty);
 
-// - /api/1.0.0/crm/Leads/:LeadId/:securityUserID/:id
-router.patch(`${baseRoute}/:securityUserID/lead/:id`,  controller.patchLead);
+// - /api/1.0.0/crm/Periorty/:LeadId/:securityUserID/:id
+router.patch(`${baseRoute}/:id`,  controller.patchPeriorty);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
-router.delete(`${baseRoute}/:securityUserID/lead/:id`,  controller.deleteLead);
+router.delete(`${baseRoute}/:id`,  controller.deletePeriorty);
 
-// - /api/1.0.0/crm/leads/search
-router.get(`/search`, controller.searchLeads);
 
 
 module.exports = router;

@@ -70,11 +70,9 @@ exports.login = async (req, res, next) => {
                 }
               }
             }else{
-              console.log("clg : 1")
               res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));
             }
         }else{
-          console.log("clg : 2")
           res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));       
         }
       }
@@ -115,7 +113,7 @@ async function issueToken(userID, userEmail){
     token = jwt.sign(
       { userId: userID, email: userEmail },
       process.env.JWT_SECRETKEY,
-      { expiresIn: '3h' }
+      { expiresIn: process.env.JWT_EXPIRES_IN }
     );
   } catch (error) {
     logger.error(new Error(error));
