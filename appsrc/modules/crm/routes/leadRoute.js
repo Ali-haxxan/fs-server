@@ -3,7 +3,7 @@ const { check } = require('express-validator');
 
 const fileUpload = require('../../../middleware/file-upload');
 const checkAuth = require('../../../middleware/check-auth');
-const { SecurityUser } = require('../../security/models/securityUser');
+const { SecurityUser } = require('../../security/models');
 const checkSecurityUserID = require('../../../middleware/check-parentID')('securityUser', SecurityUser);
 
 
@@ -19,22 +19,22 @@ const router = express.Router();
 // - /api/1.0.0/crm/Leads/:securityUserID/contacts
 const baseRoute = `/lead`;
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
-router.get(`${baseRoute}/:id`, controller.getLead);
+router.get(`${baseRoute}/:id`, checkSecurityUserID, controller.getLead);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.get(`${baseRoute}/:securityUserID/lead/`,  controller.getLeads);
+router.get(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controller.getLeads);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.post(`${baseRoute}/:securityUserID/lead/`, controller.postLead);
+router.post(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controller.postLead);
 
 // - /api/1.0.0/crm/Leads/:LeadId/:securityUserID/:id
-router.patch(`${baseRoute}/:securityUserID/lead/:id`,  controller.patchLead);
+router.patch(`${baseRoute}/:securityUserId/lead/:id`, checkSecurityUserID,  controller.patchLead);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
-router.delete(`${baseRoute}/:securityUserID/lead/:id`,  controller.deleteLead);
+router.delete(`${baseRoute}/:securityUserId/lead/:id`, checkSecurityUserID,  controller.deleteLead);
 
 // - /api/1.0.0/crm/leads/search
 router.get(`/search`, controller.searchLeads);

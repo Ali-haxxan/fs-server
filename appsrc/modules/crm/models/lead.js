@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const baseSchema = require('../../../base/baseSchema');
-
+// const patchHistory = require('mongoose-patch-history');
+// const mongooseHistory = require('mongoose-history')
 const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
@@ -71,5 +72,7 @@ docSchema.add(baseSchema.docVisibilitySchema);
 docSchema.add(baseSchema.docAuditSchema);
 
 docSchema.plugin(uniqueValidator);
+// docSchema.plugin(patchHistory, { mongoose, name: 'lead_patc_hHistory' });
+// docSchema.plugin(mongooseHistory);
 
 module.exports = mongoose.model('Lead', docSchema);

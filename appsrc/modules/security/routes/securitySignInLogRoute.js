@@ -14,9 +14,9 @@ const router = express.Router();
 // - /api/1.0.0/users/:userId/signinlogs/
 
 // - /api/1.0.0/users/:userId/signinlogs/
-const baseRoute = `/users/:userId/signinlogs/`;
+const baseRoute = `/users/signinlogs/:securityUserId`;
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 
 

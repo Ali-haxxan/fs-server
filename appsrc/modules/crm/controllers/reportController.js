@@ -42,7 +42,6 @@ exports.getReport = async (req, res, next) => {
           createdAt: { $gte: new Date(startDate), $lte: new Date(endDate)},
         }
       },
-   
     {
       $lookup: {
         from: "SecurityUsers",

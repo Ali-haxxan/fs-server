@@ -16,7 +16,7 @@ const router = express.Router();
 // - /api/1.0.0/security/roles/:id
 const baseRoute = `/roles`;
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 // - /api/1.0.0/security/roles/:id
 router.get(`${baseRoute}/:id`, controller.getSecurityRole);

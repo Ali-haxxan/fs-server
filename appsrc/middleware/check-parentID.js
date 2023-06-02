@@ -11,6 +11,7 @@ function checkParentID(parent, model) {
     }
     else {
       const objID = new ObjectId(req.params[`${parent}Id`]);
+      console.log(model)
       model.findOne({ _id: objID }).exec(function (err, record) {
         if (err) {
           return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);

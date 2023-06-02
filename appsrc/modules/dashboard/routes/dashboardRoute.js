@@ -9,7 +9,7 @@ const router = express.Router();
 this.cntrl = controllers.dashboardController;
 
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
 router.get('/', this.cntrl.getData);
 

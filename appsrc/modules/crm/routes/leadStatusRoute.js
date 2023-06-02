@@ -18,7 +18,7 @@ const router = express.Router();
 
 // - /api/1.0.0/crm/Leads/lead
 const baseRoute = `/leadStatus`;
-// router.use(checkAuth);
+router.use(checkAuth);
 
 // - /api/1.0.0/crm/leadStatus/:securityUserID/lead/:id
 router.get(`${baseRoute}/:id`,  controller.getLeadStatus);

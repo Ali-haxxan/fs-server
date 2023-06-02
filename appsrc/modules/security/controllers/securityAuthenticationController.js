@@ -34,6 +34,7 @@ this.populateList = [
 
 
 exports.login = async (req, res, next) => {
+  console.log("login")
   const errors = validationResult(req);
   var _this=this;
   if (!errors.isEmpty()) {
