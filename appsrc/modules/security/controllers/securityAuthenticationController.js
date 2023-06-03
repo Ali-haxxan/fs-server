@@ -119,7 +119,7 @@ async function issueToken(userID, userEmail,res){
   } catch (error) {
     logger.error(new Error(error));
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
-    return next(error);
+    // return next(error);
   }
   return token;
 };
