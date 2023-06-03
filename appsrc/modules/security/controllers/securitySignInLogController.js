@@ -19,12 +19,11 @@ this.fields = {};
 this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
-  {path: '', select: ''}
+  {path: 'user', select: 'name email'},
 ];
 
-
 this.populateList = [
-  {path: '', select: ''}
+  {path: 'user', select: 'name email'},
 ];
 
 

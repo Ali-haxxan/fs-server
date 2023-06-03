@@ -12,7 +12,7 @@ const controller = controllers.reportController;
 const router = express.Router();
 
 //  - base route for module
-// - /api/1.0.0/crm/Leads
+// - /api/1.0.0/crm/
 
 router.use(checkAuth);
 

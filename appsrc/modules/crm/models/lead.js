@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
         
-        user: { type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true},
+        users: [{ type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true}],
         // guid of lead from leads collection.
         periorty: { type: Schema.Types.ObjectId, ref: 'Periorty', required: true},
         // periorty of lead (high, low or medium)

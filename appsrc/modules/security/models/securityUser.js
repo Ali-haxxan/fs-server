@@ -18,7 +18,7 @@ const docSchema = new Schema({
         password: { type: String,  },
         // password to access portal
 
-        roles: { type: Schema.Types.ObjectId, ref: 'SecurityRole' },
+        role: { type: Schema.Types.ObjectId, ref: 'SecurityRole' },
 
 },
 {

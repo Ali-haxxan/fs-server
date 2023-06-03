@@ -139,16 +139,17 @@ exports.patchPeriorty= async (req, res, next) => {
 };
 
 function getDocumentFromReq(req, reqType){
-  const { user, name, isActive, isArchived, loginUser } = req.body;
+  const { user, name, isActive,periorty, isArchived, loginUser } = req.body;
   let doc = {};
   if (reqType && reqType == "new"){
     doc = new Periorty({});
   }
-  if("user" in req.body){
-    doc.user = req.body.user;
-  }
+
   if ("name" in req.body){
     doc.name = name;
+  }
+  if("periorty" in req.body){
+    doc.periorty = periorty
   }
   if ("isActive" in req.body){
     doc.isActive = isActive;
@@ -158,11 +159,11 @@ function getDocumentFromReq(req, reqType){
   }
 
   if (reqType == "new" && "loginUser" in req.body ){
-    doc.createdBy = req.params.securityUserID;
-    doc.updatedBy = req.params.securityUserID;
+    doc.createdBy = loginUser.userId;
+    doc.updatedBy = loginUser.userId;
     doc.createdIP = loginUser.userIP;
   } else if ("loginUser" in req.body) {
-    doc.updatedBy = req.params.securityUserID;
+    doc.updatedBy = loginUser.userId;
     doc.updatedIP = loginUser.userIP;
   } 
 

@@ -16,7 +16,7 @@ const router = express.Router();
 //  - base route for module
 // - /api/1.0.0/crm/Leads
 
-// - /api/1.0.0/crm/Leads/:securityUserID/contacts
+// - /api/1.0.0/crm/
 const baseRoute = `/periorty`;
 
 router.use(checkAuth);

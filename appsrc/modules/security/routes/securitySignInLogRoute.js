@@ -3,7 +3,8 @@ const { check } = require('express-validator');
 
 const fileUpload = require('../../../middleware/file-upload');
 const checkAuth = require('../../../middleware/check-auth');
-
+const { SecurityUser } = require('../models');
+const checkSecurityUserID = require('../../../middleware/check-parentID')('securityUser', SecurityUser);
 
 const controllers = require('../controllers');
 const controller = controllers.securitySignInLogController;
@@ -14,17 +15,17 @@ const router = express.Router();
 // - /api/1.0.0/users/:userId/signinlogs/
 
 // - /api/1.0.0/users/:userId/signinlogs/
-const baseRoute = `/users/signinlogs/:securityUserId`;
+const baseRoute = `/users/:securityUserId/signinlogs/`;
 
 router.use(checkAuth);
 
 
 
 // - /api/1.0.0/users/:userId/signinlogs/:id
-router.get(`${baseRoute}/:id`, controller.getSecuritySignInLog);
+router.get(`${baseRoute}/:id`,checkSecurityUserID, controller.getSecuritySignInLog);
 
 // - /api/1.0.0/users/:userId/signinlogs/
-router.get(`${baseRoute}`,  controller.getSecuritySignInLogs);
+router.get(`${baseRoute}`, checkSecurityUserID, controller.getSecuritySignInLogs);
 
 // - /api/1.0.0/users/:userId/signinlogs/
 router.post(`${baseRoute}/`, controller.postSignInLog);

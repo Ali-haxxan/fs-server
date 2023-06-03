@@ -19,11 +19,11 @@ this.fields = {};
 this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
-  {path: 'roles', select: 'name'},
+  {path: 'role', select: 'name'},
 ];
 
 this.populateList = [
-  {path: 'roles', select: 'name'},
+  {path: 'role', select: 'name'},
 ];
 
 
@@ -226,7 +226,7 @@ async function comparePasswords(encryptedPass, textPass, next){
 };
 
 async function getDocumentFromReq(req, reqType){
-  const {  name, phone, email, password, roles, isActive, isArchived ,loginUser} = req.body;
+  const {  name, phone, email, password, role, isActive, isArchived ,loginUser} = req.body;
 
   let doc = {};
   
@@ -255,8 +255,8 @@ async function getDocumentFromReq(req, reqType){
     }
   }
 
-  if ("roles" in req.body){
-    doc.roles = roles;
+  if ("role" in req.body){
+    doc.role = role;
   }
 
   if ("isActive" in req.body){

@@ -22,7 +22,7 @@ const baseRoute = `/lead`;
 router.use(checkAuth);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
-router.get(`${baseRoute}/:id`, checkSecurityUserID, controller.getLead);
+router.get(`${baseRoute}/:id`,  controller.getLead);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/lead/
 router.get(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controller.getLeads);
@@ -34,7 +34,7 @@ router.post(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controlle
 router.patch(`${baseRoute}/:securityUserId/lead/:id`, checkSecurityUserID,  controller.patchLead);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
-router.delete(`${baseRoute}/:securityUserId/lead/:id`, checkSecurityUserID,  controller.deleteLead);
+router.delete(`${baseRoute}/:securityUserId/lead/:id`, controller.deleteLead);
 
 // - /api/1.0.0/crm/leads/search
 router.get(`/search`, controller.searchLeads);

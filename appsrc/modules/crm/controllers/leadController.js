@@ -20,7 +20,7 @@ this.fields = {};
 this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
-                {path: 'user', select: 'name'},
+                {path: 'users', select: 'name'},
                 {path: 'lead', select: 'name'},
                 {path: 'status', select: 'name'},
                 {path: 'periorty', select: 'name'},
@@ -28,7 +28,12 @@ this.populate = [
                 {path: 'updatedBy', select: 'name'}
                 ];
 this.populateList = [
-                  {path: 'roles', select: 'name'},
+                  {path: 'users', select: 'name'},
+                  {path: 'lead', select: 'name'},
+                  {path: 'status', select: 'name'},
+                  {path: 'periorty', select: 'name'},
+                  {path: 'createdBy', select: 'name'},
+                  {path: 'updatedBy', select: 'name'}
                 ];
 
 exports.getLead= async (req, res, next) => {
@@ -38,7 +43,11 @@ exports.getLead= async (req, res, next) => {
       logger.error(new Error(error));
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
     } else {
-      res.json(response);
+      // if(!res.json(response).isEmpty()){
+        res.json(response);
+      // }else{
+      // res.status(StatusCodes.NOT_FOUND).send(getReasonPhrase(StatusCodes.NOT_FOUND));
+      // }
     }
   }
 };
@@ -79,8 +88,9 @@ exports.searchLeads = async (req, res, next) => {
 
 
 exports.deleteLead= async (req, res, next) => {
-  if(req.params.id && req.params.securityUserID) {
-    let lead= await Lead.findOne({_id:req.params.id, user:req.params.securityUserID});
+  if(req.params.id && req.params.securityUserId) {
+    let lead= await Lead.findOne({_id:req.params.id, users:req.params.securityUserId});
+    console.log("lead",lead)
     if(lead) {
       this.dbservice.deleteObject(Lead, req.params.id, callbackFunc);
       function callbackFunc(error, result) {
@@ -93,7 +103,7 @@ exports.deleteLead= async (req, res, next) => {
       }
     }
     else {
-      res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
+      res.status(StatusCodes.NOT_FOUND).send(getReasonPhrase(StatusCodes.NOT_FOUND));
     }
   }
   else {
@@ -129,7 +139,7 @@ exports.patchLead= async (req, res, next) => {
   } else {
     var _this = this;
     this.query = req.query != "undefined" ? req.query : {}; 
-    this.query.user = req.params.securityUserID;
+    this.query.users = req.params.securityUserID;
     this.query._id = req.params.id;
     this.dbservice.getObject(Lead, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
@@ -159,17 +169,17 @@ exports.patchLead= async (req, res, next) => {
 };
 
 function getDocumentFromReq(req, reqType){
-  const { user, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
+  const { users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
      status, streetAddress, aptSuite, city, postCode, country, lat, long, isActive, isArchived, loginUser } = req.body;
   let doc = {};
   if (reqType && reqType == "new"){
     doc = new Lead({});
   }
-  if (req.params.securityUserID){
-    doc.user = req.params.securityUserID;
+  if (req.params.securityUserId){
+    doc.users = req.params.securityUserId;
   }
-  if ("user" in req.body){
-    doc.user = user;
+  if ("users" in req.body){
+    doc.users = users;
   }
   if ("firstName" in req.body){
     doc.firstName = firstName;
@@ -230,11 +240,11 @@ function getDocumentFromReq(req, reqType){
   }
 
   if (reqType == "new" && "loginUser" in req.body ){
-    doc.createdBy = req.params.securityUserID;
-    doc.updatedBy = req.params.securityUserID;
+    doc.createdBy = loginUser.userId;
+    doc.updatedBy = loginUser.userId;
     doc.createdIP = loginUser.userIP;
   } else if ("loginUser" in req.body) {
-    doc.updatedBy = req.params.securityUserID;
+    doc.updatedBy = loginUser.userId;
     doc.updatedIP = loginUser.userIP;
   } 
 

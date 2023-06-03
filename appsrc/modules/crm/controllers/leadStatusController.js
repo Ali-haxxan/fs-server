@@ -166,11 +166,11 @@ function getDocumentFromReq(req, reqType){
 
 
   if (reqType == "new" && "loginUser" in req.body ){
-    doc.createdBy = req.params.SecurityUserId;
-    doc.updatedBy = req.params.SecurityUserId;
+    doc.createdBy = loginUser.userId;
+    doc.updatedBy = loginUser.userId;
     doc.createdIP = loginUser.userIP;
   } else if ("loginUser" in req.body) {
-    doc.updatedBy = req.params.SecurityUserId;
+    doc.updatedBy = loginUser.userId;
     doc.updatedIP = loginUser.userIP;
   } 
   return doc;
