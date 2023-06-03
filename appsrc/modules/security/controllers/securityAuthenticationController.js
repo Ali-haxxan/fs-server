@@ -115,7 +115,6 @@ async function issueToken(userID, userEmail,res){
       process.env.JWT_SECRETKEY,
       { expiresIn: '3d' }
     );
-    console.log("issueToken token : ",token);
   } catch (error) {
     console.log("issueToken error : ",error);
     logger.error(new Error(error));
