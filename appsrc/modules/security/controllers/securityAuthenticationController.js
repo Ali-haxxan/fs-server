@@ -51,7 +51,7 @@ exports.login = async (req, res, next) => {
           const existingUser = response;
           const passwordsResponse = await comparePasswords(req.body.password, existingUser.password, res);
             if(passwordsResponse){
-              const accessToken = await issueToken(existingUser._id, existingUser.email);
+              const accessToken = await issueToken(existingUser._id, existingUser.email,res);
               if(accessToken){
                 updatedToken = updateUserToken(accessToken);
                 _this.dbservice.patchObject(SecurityUser, existingUser._id, updatedToken, callbackPatchFunc);
@@ -108,7 +108,7 @@ async function comparePasswords(encryptedPass, textPass, res){
 };
 
 
-async function issueToken(userID, userEmail){
+async function issueToken(userID, userEmail,res){
   let token;
   try {
     token = jwt.sign(
