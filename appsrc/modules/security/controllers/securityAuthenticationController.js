@@ -116,7 +116,9 @@ async function issueToken(userID, userEmail,res){
       process.env.JWT_SECRETKEY,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
+    console.log("issueToken token : ",token);
   } catch (error) {
+    console.log("issueToken error : ",error);
     logger.error(new Error(error));
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
     // return next(error);
