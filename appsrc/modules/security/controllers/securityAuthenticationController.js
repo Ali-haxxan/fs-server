@@ -34,7 +34,6 @@ this.populateList = [
 
 
 exports.login = async (req, res, next) => {
-  console.log("login")
   const errors = validationResult(req);
   var _this=this;
   if (!errors.isEmpty()) {
@@ -114,7 +113,7 @@ async function issueToken(userID, userEmail,res){
     token = jwt.sign(
       { userId: userID, email: userEmail },
       process.env.JWT_SECRETKEY,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: '3d' }
     );
     console.log("issueToken token : ",token);
   } catch (error) {
