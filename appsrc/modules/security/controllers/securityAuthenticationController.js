@@ -130,7 +130,7 @@ function updateUserToken(accessToken){
   let token = {
     accessToken: accessToken,
     tokenCreation: currentDate,
-    tokenExpiry: new Date(currentDate.getTime() + 3 * 60 * 60 * 1000)
+    tokenExpiry: new Date(currentDate.getTime() + 72 * 60 * 60 * 1000)
   }
   doc.token = token;
   return doc;
