@@ -49,7 +49,7 @@ exports.login = async (req, res, next) => {
       } else {  
         if(!(_.isEmpty(response)) ){
           const existingUser = response;
-            const passwordsResponse = await comparePasswords(req.body.password, existingUser.password)
+          const passwordsResponse = await comparePasswords(req.body.password, existingUser.password, res);
             if(passwordsResponse){
               const accessToken = await issueToken(existingUser._id, existingUser.email);
               if(accessToken){
@@ -95,7 +95,7 @@ exports.logout = async (req, res, next) => {
     }
 };
 
-async function comparePasswords(encryptedPass, textPass, next){
+async function comparePasswords(encryptedPass, textPass, res){
   let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(encryptedPass, textPass);
