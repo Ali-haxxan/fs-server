@@ -16,25 +16,25 @@ const router = express.Router();
 //  - base route for module
 // - /api/1.0.0/crm/Leads
 
-// - /api/1.0.0/crm/Leads/:securityUserID/contacts
+// - /api/1.0.0/crm/Leads/:securityUserId/contacts
 const baseRoute = `/lead`;
 
 router.use(checkAuth);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/:id
+// - /api/1.0.0/crm/Leads/:securityUserId/lead/:id
 router.get(`${baseRoute}/:id`,  controller.getLead);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.get(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controller.getLeads);
+// - /api/1.0.0/crm/Leads/:securityUserId/lead/
+router.get(`${baseRoute}/`, controller.getLeads);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/lead/
-router.post(`${baseRoute}/:securityUserId/lead/`, checkSecurityUserID, controller.postLead);
+// - /api/1.0.0/crm/Leads/:securityUserId/lead/
+router.post(`${baseRoute}/`, controller.postLead);
 
-// - /api/1.0.0/crm/Leads/:LeadId/:securityUserID/:id
-router.patch(`${baseRoute}/:securityUserId/lead/:id`, checkSecurityUserID,  controller.patchLead);
+// - /api/1.0.0/crm/Leads/:LeadId/:securityUserId/:id
+router.patch(`${baseRoute}/:id`, controller.patchLead);
 
-// - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
-router.delete(`${baseRoute}/:securityUserId/lead/:id`, controller.deleteLead);
+// - /api/1.0.0/crm/Leads/:securityUserId/:securityUserId/:id   checkSecurityUserID,
+router.delete(`${baseRoute}/:id`, controller.deleteLead);
 
 // - /api/1.0.0/crm/leads/search
 router.get(`/search`, controller.searchLeads);

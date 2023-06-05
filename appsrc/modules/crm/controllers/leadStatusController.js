@@ -38,7 +38,7 @@ exports.getLeadStatus = async (req, res, next) => {
 exports.getLeadStatuses = async (req, res, next) => {
   console.log("first")
   this.query = req.query != "undefined" ? req.query : {};  
-  this.securityUserID = req.params.securityUserID;
+  this.securityUserID = req.params.securityUserId;
   this.query.user = this.securityUserID; 
   this.dbservice.getObjectList(LeadStatus, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
@@ -114,7 +114,7 @@ exports.patchLeadStatus = async (req, res, next) => {
   } else {
     var _this = this;
     this.query = req.query != "undefined" ? req.query : {}; 
-    this.query.user = req.params.securityUserID;
+    this.query.user = req.params.securityUserId;
     this.query._id = req.params.id;
     this.dbservice.getObject(LeadStatus, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
@@ -147,7 +147,7 @@ function getDocumentFromReq(req, reqType){
     doc = new LeadStatus({});
   }
   if (req.params){
-    doc.user = req.params.securityUserID;
+    doc.user = req.params.securityUserId;
   }else{
     doc.user = req.body.user;
   }

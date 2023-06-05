@@ -2,21 +2,18 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const baseSchema = require('../../../base/baseSchema');
-// const patchHistory = require('mongoose-patch-history');
-// const mongooseHistory = require('mongoose-history')
 const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
-        
-        users: [{ type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true}],
-        // guid of lead from leads collection.
-        periorty: { type: Schema.Types.ObjectId, ref: 'Periorty', required: true},
+
+
+        periorty: { type: Schema.Types.ObjectId, ref: 'Periorty' },
         // periorty of lead (high, low or medium)
 
-        businessName: { type: String, required: true},
+        businessName: { type: String },
         // Business name of contact person firm
 
-        firstName: { type: String, required: true},
+        firstName: { type: String },
         // First name of contact person
         
         lastName: { type: String },
@@ -46,11 +43,10 @@ const docSchema = new Schema({
         country: { type: String },
         //
         
-        status: { type: Schema.Types.ObjectId, ref: 'LeadStatus', required: true},
+        status: { type: Schema.Types.ObjectId, ref: 'LeadStatus'},
         // guid of lead from leads collection.
 
-        appoinmentDate: { type : Date, default: Date.now },
-        // lead contact note .
+        appoinmentDate: { type : Date },
         
         note: {type: String},
         // lead contact note .
@@ -63,16 +59,12 @@ const docSchema = new Schema({
 
 },
 {
-        collection: 'Leads'
+        collection: 'LeadHistory'
 });
 docSchema.set('timestamps', true);
-docSchema.add(baseSchema.docContactSchema)
-docSchema.add(baseSchema.docAddressSchema);
-docSchema.add(baseSchema.docVisibilitySchema);
+// docSchema.add(baseSchema.docVisibilitySchema);
 docSchema.add(baseSchema.docAuditSchema);
 
 docSchema.plugin(uniqueValidator);
-// docSchema.plugin(patchHistory, { mongoose, name: 'lead_patch_History' });
-// docSchema.plugin(mongooseHistory);
 
-module.exports = mongoose.model('Lead', docSchema);
+module.exports = mongoose.model('LeadHistory', docSchema);

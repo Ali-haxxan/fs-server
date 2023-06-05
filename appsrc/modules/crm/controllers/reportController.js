@@ -28,8 +28,8 @@ this.populateList = [];
 
 exports.getReport = async (req, res, next) => {
 
-  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
-  this.securityUserID = req.params.securityUserID;
+  let user = await SecurityUser.findById(req.params.securityUserId).populate({path: 'roles', select: 'readAccess'}); 
+  this.securityUserID = req.params.securityUserId;
 
   const startDate = req.body.startDate
   const endDate = req.body.endDate

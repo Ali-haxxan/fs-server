@@ -77,31 +77,31 @@ exports.postSecurityUser = async (req, res, next) => {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } 
   else {
-    // check if email exists
-    var _this = this;
-    let queryString  = { email: req.body.email.toLowerCase() };
-    this.dbservice.getObject(SecurityUser, queryString, this.populate, getObjectCallback);
-    async function getObjectCallback(error, response) {
-      if (error) {
-        logger.error(new Error(error));
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
-      } else {
-        if(_.isEmpty(response)){
-          const doc = await getDocumentFromReq(req, 'new');
-          _this.dbservice.postObject(doc, callbackFunc);
-          function callbackFunc(error, response) {
-            if (error) {
-              logger.error(new Error(error));
-              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
-            } else {
-              res.status(StatusCodes.CREATED).json({ user: response });
-            }
-          }  
-        }else{
-          res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordDuplicateRecordMessage(StatusCodes.BAD_REQUEST));              
+      // check if email exists
+      var _this = this;
+      let queryString  = { email: req.body.email.toLowerCase() };
+      this.dbservice.getObject(SecurityUser, queryString, this.populate, getObjectCallback);
+      async function getObjectCallback(error, response) {
+        if (error) {
+          logger.error(new Error(error));
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
+        } else {
+          if(_.isEmpty(response)){
+            const doc = await getDocumentFromReq(req, 'new');
+            _this.dbservice.postObject(doc, callbackFunc);
+            function callbackFunc(error, response) {
+              if (error) {
+                logger.error(new Error(error));
+                res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+              } else {
+                res.status(StatusCodes.CREATED).json({ user: response });
+              }
+            }  
+          }else{
+            res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordDuplicateRecordMessage(StatusCodes.BAD_REQUEST));              
+          }
         }
       }
-    }
   }
 };
 
@@ -112,7 +112,10 @@ exports.patchSecurityUser = async (req, res, next) => {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } else {
     var _this = this;
-    let queryString  = { email: req.body.email.toLowerCase()};
+    let queryString;
+    if(req.body?.email){
+      queryString  = { email: req.body.email.toLowerCase()};
+    }
     this.dbservice.getObject(SecurityUser, queryString, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
       if (error) {

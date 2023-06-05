@@ -9,10 +9,13 @@ const _ = require('lodash');
 const HttpError = require('../../config/models/http-error');
 const logger = require('../../config/logger');
 let rtnMsg = require('../../config/static/static')
+const isEqual = require('lodash/isEqual');
+const { ObjectId } = require('mongodb');
 
 let LeadDBService = require('../service/leadDBService')
 this.dbservice = new LeadDBService();
 const { Lead} = require('../models');
+const { LeadHistory } = require('../models');
 
 this.debug = process.env.LOG_TO_CONSOLE != null && process.env.LOG_TO_CONSOLE != undefined ? process.env.LOG_TO_CONSOLE : false;
 
@@ -53,10 +56,11 @@ exports.getLead= async (req, res, next) => {
 };
 
 exports.getLeads = async (req, res, next) => {
-  this.securityUserID = req.params.securityUserID;
-  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
-  if(user?.roles?.readAccess === false){
-    this.query.user = this.securityUserID;
+  this.securityUserID = req.body.loginUser.userId;
+  this.query = req.body.params ? req.body.params : {}; 
+  let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'readAccess'}); 
+  if(user.role.readAccess === false){
+    this.query.users = this.securityUserID;
   }
   this.dbservice.getObjectList(Lead, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
@@ -70,8 +74,8 @@ exports.getLeads = async (req, res, next) => {
 };
 
 exports.searchLeads = async (req, res, next) => {
-  this.securityUserID = req.params.securityUserID;
-  let user = await SecurityUser.findById(req.params.securityUserID).populate({path: 'roles', select: 'readAccess'}); 
+  this.securityUserID = req.body.loginUser.userId;
+  let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'readAccess'}); 
   if(user?.roles?.readAccess === false){
     this.query.user = this.securityUserID;
   }
@@ -86,12 +90,27 @@ exports.searchLeads = async (req, res, next) => {
   }
 };
 
-
 exports.deleteLead= async (req, res, next) => {
-  if(req.params.id && req.params.securityUserId) {
-    let lead= await Lead.findOne({_id:req.params.id, users:req.params.securityUserId});
-    console.log("lead",lead)
-    if(lead) {
+  this.securityUserID = req.body.loginUser.userId;
+  if(req.params.id && this.securityUserID) {
+    let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'deleteAccess'}); 
+    if(user.role.deleteAccess === false){
+      let lead= await Lead.findOne({_id:req.params.id, users:this.securityUserID});
+      if(lead) {
+        this.dbservice.deleteObject(Lead, req.params.id, callbackFunc);
+        function callbackFunc(error, result) {
+          if (error) {
+            logger.error(new Error(error));
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
+          } else {
+            res.status(StatusCodes.OK).send(rtnMsg.recordDelMessage(StatusCodes.OK, result));
+          }
+        }
+      }
+      else {
+        res.status(StatusCodes.NOT_FOUND).send(getReasonPhrase(StatusCodes.NOT_FOUND));
+      }
+    }else{
       this.dbservice.deleteObject(Lead, req.params.id, callbackFunc);
       function callbackFunc(error, result) {
         if (error) {
@@ -101,9 +120,6 @@ exports.deleteLead= async (req, res, next) => {
           res.status(StatusCodes.OK).send(rtnMsg.recordDelMessage(StatusCodes.OK, result));
         }
       }
-    }
-    else {
-      res.status(StatusCodes.NOT_FOUND).send(getReasonPhrase(StatusCodes.NOT_FOUND));
     }
   }
   else {
@@ -139,7 +155,16 @@ exports.patchLead= async (req, res, next) => {
   } else {
     var _this = this;
     this.query = req.query != "undefined" ? req.query : {}; 
-    this.query.users = req.params.securityUserID;
+    this.securityUserID = req.body.loginUser.userId;
+    let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'writeAccess'}); 
+    let lead = await Lead.findById(req.params.id); 
+    // console.log("lead : ",lead)
+    const result = compareObjects(lead, req.body);
+
+    // console.log("result : ",result)
+    if(user.role.writeAccess === false){
+      this.query.users = this.securityUserID;
+    }
     this.query._id = req.params.id;
     this.dbservice.getObject(Lead, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
@@ -149,6 +174,9 @@ exports.patchLead= async (req, res, next) => {
       } else { 
         if(!(_.isEmpty(response))){
           _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
+          if(Object.keys(result).length > 2 && ( result.users !== undefined)){
+            _this.dbservice.postObject(getHistoryDocument(result, 'new'), callbackFunc);
+          }
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
@@ -168,18 +196,90 @@ exports.patchLead= async (req, res, next) => {
   }
 };
 
+// Function to compare JSON objects excluding arrays and objects
+function compareObjects(obj1, obj2) {
+  // console.log(obj2)
+  const changesInLead = {};
+  for (const key in obj2) {
+    if (obj2[key] !== obj1[key]) {
+      // if (Array.isArray(obj2[key]) || typeof obj2[key] !== 'object') {
+        if (typeof new Date(obj2[key]).getFullYear === 'function' && ObjectId.isValid(obj2[key]) === false) {
+          if (compareDate(obj2[key], obj1[key])) {
+            changesInLead[key] = obj2[key];
+          }
+        } else {
+          if (isMongoObjectId(obj2[key])) {
+            if (obj2[key].toString() !== obj1[key].toString()){
+              changesInLead[key] = obj2[key];
+            }
+          } else {
+            changesInLead[key] = obj2[key];
+          }
+        }
+      // }
+    }
+  }
+  console.log("changesInLead : ",changesInLead)
+  return changesInLead;
+}
+exports.compareObjects = compareObjects;
+
+// compare object IDS
+function compareIds(objectId1,objectId2){
+  return objectId1.toString() === objectId2.toString();
+}
+exports.compareIds = compareIds;
+
+// MongoDB IDs
+function isMongoObjectId(value) {
+  return ObjectId.isValid(value);
+}
+exports.isMongoObjectId = isMongoObjectId;
+
+// compare Dates
+function compareDate(regular, mongo){
+  //Example of regular  date
+  const regularDate = new Date(regular);
+
+  // Example date retrieved from MongoDB
+  const mongodbDate = new Date(mongo); 
+
+  // Extract the date components from the regular date
+  const regularYear =   regularDate.getFullYear();
+  const regularMonth =  regularDate.getMonth();
+  const regularDay =    regularDate.getDate();
+
+  // Extract the date components from the MongoDB date
+  const mongodbYear = mongodbDate.getFullYear();
+  const mongodbMonth = mongodbDate.getMonth();
+  const mongodbDay = mongodbDate.getDate();
+  if(regularYear !== mongodbYear && regularMonth !== mongodbMonth && regularDay !== mongodbDay){
+    return true; 
+    }else{
+    return false;
+  }
+}
+exports.compareDate = compareDate;
+
+function isValidDate(date) {
+  return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
+}
+exports.isValidDate = isValidDate
+// getDocumentFromReq
+
 function getDocumentFromReq(req, reqType){
   const { users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
      status, streetAddress, aptSuite, city, postCode, country, lat, long, isActive, isArchived, loginUser } = req.body;
+     this.securityUserID = loginUser.userId;
   let doc = {};
   if (reqType && reqType == "new"){
     doc = new Lead({});
   }
-  if (req.params.securityUserId){
-    doc.users = req.params.securityUserId;
-  }
   if ("users" in req.body){
     doc.users = users;
+  }
+  if(reqType && reqType == "new"){
+    doc.users = this.securityUserID
   }
   if ("firstName" in req.body){
     doc.firstName = firstName;
@@ -248,10 +348,84 @@ function getDocumentFromReq(req, reqType){
     doc.updatedIP = loginUser.userIP;
   } 
 
-
   return doc;
+}
+
+exports.getDocumentFromReq = getDocumentFromReq;
+
+function getHistoryDocument(data, reqType){
+console.log("Data : ",data);
+  const {users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
+     status, streetAddress, aptSuite, city, postCode, country, lat, long, loginUser } = data;
+     
+  let historyDoc = {};
+  if (reqType && reqType == "new"){
+    historyDoc = new LeadHistory({});
+  }
+  if ("users" in data){
+    historyDoc.users = users;
+  }
+
+  if ("firstName" in data){
+    historyDoc.firstName = firstName;
+  }
+  if ("lastName" in data){
+    historyDoc.lastName = lastName;
+  }
+  if ("businessName" in data){
+    historyDoc.businessName = businessName;
+  }
+  if ("phone" in data){
+    historyDoc.phone = phone;
+  }
+  if ("alternatePhone" in data){
+    historyDoc.alternatePhone = alternatePhone;
+  }
+  if ("email" in data){
+    historyDoc.email = email;
+  }
+  if ("appoinmentDate" in data){
+    historyDoc.appoinmentDate = appoinmentDate;
+  }
+  if("periorty" in data){
+    historyDoc.periorty = periorty;
+  }
+  if ("note" in data){
+    historyDoc.note = note;
+  }
+  if("status" in data){
+    historyDoc.status = status;
+  }
+  if("streetAddress" in data){
+    historyDoc.streetAddress = streetAddress;
+  }
+  if("aptSuite" in data){
+    historyDoc.aptSuite = aptSuite;
+  }
+  if("city" in data){
+    historyDoc.city = city;
+  }
+  if("postCode" in data){
+    historyDoc.postCode = postCode;
+  }
+  if("country" in data){
+    historyDoc.country = country;
+  }
+  if ("lat" in data){
+    historyDoc.lat = lat;
+  }
+  if ("long" in data){
+    historyDoc.long = long;
+  }
+ 
+
+  if ("loginUser" in data ){
+    historyDoc.updatedBy = loginUser.userId;
+    historyDoc.updatedIP = loginUser.userIP;
+  } 
+console.log("historyDoc : ",historyDoc)
+  return historyDoc;
 
 }
 
-
-exports.getDocumentFromReq = getDocumentFromReq;
+exports.getHistoryDocument = getHistoryDocument;

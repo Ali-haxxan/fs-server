@@ -128,7 +128,7 @@ function getDocumentFromReq(req, reqType){
   }
 
   if ("deleteAccess" in req.body){
-    doc.udeleteAccess = deleteAccess;
+    doc.deleteAccess = deleteAccess;
   }
 
   if ("isActive" in req.body){
