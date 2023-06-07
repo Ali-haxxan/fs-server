@@ -159,7 +159,7 @@ exports.patchLead= async (req, res, next) => {
     let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'writeAccess'}); 
     let lead = await Lead.findById(req.params.id); 
     // console.log("lead : ",lead)
-    const result = compareObjects(lead, req.body);
+    const LeadChanges = compareObjects(lead, req.body);
 
     // console.log("result : ",result)
     if(user.role.writeAccess === false){
@@ -174,8 +174,8 @@ exports.patchLead= async (req, res, next) => {
       } else { 
         if(!(_.isEmpty(response))){
           _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
-          if(Object.keys(result).length > 2 && ( result.users !== undefined)){
-            _this.dbservice.postObject(getHistoryDocument(result, 'new'), callbackFunc);
+          if(Object.keys(LeadChanges).length > 2 && ( LeadChanges.users !== undefined)){
+            _this.dbservice.postObject(getHistoryDocument(LeadChanges, 'new', req.params.id),null);
           }
           function callbackFunc(error, result) {
             if (error) {
@@ -353,19 +353,23 @@ function getDocumentFromReq(req, reqType){
 
 exports.getDocumentFromReq = getDocumentFromReq;
 
-function getHistoryDocument(data, reqType){
-console.log("Data : ",data);
+function getHistoryDocument(data, reqType, Id){
+console.log("Data : ",data, "Id : ",Id);
   const {users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
      status, streetAddress, aptSuite, city, postCode, country, lat, long, loginUser } = data;
      
   let historyDoc = {};
+   
+
   if (reqType && reqType == "new"){
     historyDoc = new LeadHistory({});
   }
+   // if(Id){
+    historyDoc.lead = Id
+    // }
   if ("users" in data){
     historyDoc.users = users;
   }
-
   if ("firstName" in data){
     historyDoc.firstName = firstName;
   }

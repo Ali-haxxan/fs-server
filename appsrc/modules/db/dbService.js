@@ -7,7 +7,6 @@ class dbService {
   }
 
   getObjectById(model, fields, id, populate, callback) {
-    //console.log('populate :'+populate);
 
     model.findById(id, fields).populate(populate).exec((err, documents) => {
       if (err) {
@@ -37,7 +36,6 @@ class dbService {
       }
     });
   }
-
 
   getObjectListWithAggregate(model, aggregate, params, callback) {
     model.aggregate([
@@ -80,6 +78,5 @@ class dbService {
     });
   }
 }
-
 
 module.exports = dbService;

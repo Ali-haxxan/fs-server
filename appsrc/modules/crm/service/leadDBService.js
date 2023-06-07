@@ -50,68 +50,13 @@ class LeadService {
     }
   };
 
-  postObject(newdocument, callback) {
-    const db = this.db;
-    async.waterfall([
-      function (callback) {
-        if (newdocument.mainSite != undefined && typeof newdocument.mainSite !== "string") {
-          this.db.postObject(newdocument.mainSite, callbackFunction);
-          function callbackFunction(error, response) {
-            console.log(error);
-            if (error) callback(error, {});
-            else {
-              newdocument.sites.push(response._id);
-              newdocument.mainSite = response._id;
-              callback(null, newdocument);
-            }
-          }
-        } else {
-          callback(null, newdocument);
-        }
-      }.bind(this),
-      function (data, callback) {
-        if (newdocument.billingContact != undefined && typeof newdocument.billingContact !== "string") {
-          this.db.postObject(newdocument.billingContact, callbackFunction);
-          function callbackFunction(error, response) {
-            console.log(error);
-            if (error) callback(error, {});
-            else {
-              newdocument.contacts.push(response._id);
-              newdocument.primaryBillingContact = response._id;
-              callback(null, newdocument);
-            }
-          }
-        } else {
-          callback(null, newdocument);
-        }
-      }.bind(this),
-      function (data, callback) {
-        if (newdocument.technicalContact != undefined && typeof newdocument.technicalContact !== "string") {
-          this.db.postObject(newdocument.technicalContact, callbackFunction);
-          function callbackFunction(error, response) {
-            console.log(error);
-            if (error) callback(error, {});
-            else {
-              newdocument.contacts.push(response._id);
-              newdocument.primaryTechnicalContact = response._id;
-              callback(null, newdocument);
-            }
-          }
-        } else {
-          callback(null, newdocument);
-        }
-      }.bind(this),
-    ], function (err, result) {
-      if (err) return callback(err);
-      db.postObject(newdocument, callbackFunction);
-      function callbackFunction(error, response) {
-        if (error) callback(error, {});
-        else callback(null, response);
-      }
-    }.bind(this));
+  postObject(document, callback) {
+    this.db.postObject(document, callbackFunction);
+    function callbackFunction(error, response) {
+      if (error) callback(error, {});
+      else callback(null, response);
+    }
   }
-
-
 
   patchObject(model, id, newValues, callback) {
     this.db.patchObject(model, id, newValues, callbackFunc);

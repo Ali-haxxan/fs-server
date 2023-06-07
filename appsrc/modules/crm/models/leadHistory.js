@@ -6,6 +6,11 @@ const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
 
+        lead: { type: Schema.Types.ObjectId, ref: 'Lead' },
+        // lead Id
+
+        users: [{ type: Schema.Types.ObjectId, ref: 'SecurityUser' }],
+        // users is's
 
         periorty: { type: Schema.Types.ObjectId, ref: 'Periorty' },
         // periorty of lead (high, low or medium)
@@ -15,16 +20,16 @@ const docSchema = new Schema({
 
         firstName: { type: String },
         // First name of contact person
-        
+
         lastName: { type: String },
         // Last name of contact person
-        
+
         phone: { type: String },
         // phone/mobile numbers.
 
         alternatePhone: { type: String },
         // phone/mobile numbers.
-        
+
         email: { type: String },
         // Email addresses. 
 
@@ -42,26 +47,27 @@ const docSchema = new Schema({
 
         country: { type: String },
         //
-        
+
         status: { type: Schema.Types.ObjectId, ref: 'LeadStatus'},
         // guid of lead from leads collection.
 
         appoinmentDate: { type : Date },
-        
+
         note: {type: String},
         // lead contact note .
-        
+
         lat: { type: String },
         // latitude coordinates of site
     
         long: { type: String },
         // // longitude coordinates of site
+        updatedAt: { type : Date, default: Date.now },
 
 },
 {
         collection: 'LeadHistory'
 });
-docSchema.set('timestamps', true);
+// docSchema.set('timestamps', true);
 // docSchema.add(baseSchema.docVisibilitySchema);
 docSchema.add(baseSchema.docAuditSchema);
 
