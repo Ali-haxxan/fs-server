@@ -20,6 +20,14 @@ const docSchema = new Schema({
 
         role: { type: Schema.Types.ObjectId, ref: 'SecurityRole' },
 
+        liveStatus: { type: String},
+        // live status of users/ connected / Disconnected
+        lat: { type: String },
+        // latitude coordinates of site
+    
+        long: { type: String },
+        // // longitude coordinates of site
+
 },
 {
         collection: 'SecurityUsers'

@@ -26,7 +26,7 @@ this.populate = [
                 {path: 'users', select: 'name'},
                 {path: 'lead', select: 'name'},
                 {path: 'status', select: 'name'},
-                {path: 'periorty', select: 'name'},
+                {path: 'priority', select: 'name'},
                 {path: 'createdBy', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
                 ];
@@ -34,7 +34,7 @@ this.populateList = [
                   {path: 'users', select: 'name'},
                   {path: 'lead', select: 'name'},
                   {path: 'status', select: 'name'},
-                  {path: 'periorty', select: 'name'},
+                  {path: 'priority', select: 'name'},
                   {path: 'createdBy', select: 'name'},
                   {path: 'updatedBy', select: 'name'}
                 ];
@@ -174,22 +174,31 @@ exports.patchLead= async (req, res, next) => {
       } else { 
         if(!(_.isEmpty(response))){
           _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
-          if(Object.keys(LeadChanges).length > 2 && ( LeadChanges.users !== undefined)){
-            _this.dbservice.postObject(getHistoryDocument(LeadChanges, 'new', req.params.id),null);
-          }
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
               res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
                 error
-                //getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR)
                 );
             } else {
               res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
             }
           }
         }else{
-          res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordCustomMessage(StatusCodes.BAD_REQUEST, "Security User ID Mismatch!"));
+          res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordCustomMessage(StatusCodes.BAD_REQUEST, "User ID Mismatch!"));
+        }
+        if(Object.keys(LeadChanges).length > 2 && ( LeadChanges.users !== undefined) && !(_.isEmpty(response))){
+          _this.dbservice.postObject(getHistoryDocument(LeadChanges, 'new', req.params.id),null);
+          // function callbackFunc(error, result) {
+          //   if (error) {
+          //     logger.error(new Error(error));
+          //     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
+          //       error
+          //       );
+          //   } else {
+          //     res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
+          //   }
+          // }
         }
       }
     }  
@@ -198,15 +207,17 @@ exports.patchLead= async (req, res, next) => {
 
 // Function to compare JSON objects excluding arrays and objects
 function compareObjects(obj1, obj2) {
-  // console.log(obj2)
+  console.log(obj2)
   const changesInLead = {};
   for (const key in obj2) {
-    if (obj2[key] !== obj1[key]) {
+    if (obj2[key] !== obj1[key]) {    
+      // console.log("obj2[key] : " , obj2[key])
       // if (Array.isArray(obj2[key]) || typeof obj2[key] !== 'object') {
-        if (typeof new Date(obj2[key]).getFullYear === 'function' && ObjectId.isValid(obj2[key]) === false) {
-          if (compareDate(obj2[key], obj1[key])) {
+        if (typeof new Date(obj2[key]).getFullYear === 'function' && compareDate(obj2[key], obj1[key]) && !(isMongoObjectId(obj2[key]))) {
+          console.log("date section : " , obj2[key])
+          // if (compareDate(obj2[key], obj1[key])) {
             changesInLead[key] = obj2[key];
-          }
+          // }
         } else {
           if (isMongoObjectId(obj2[key])) {
             if (obj2[key].toString() !== obj1[key].toString()){
@@ -268,7 +279,7 @@ exports.isValidDate = isValidDate
 // getDocumentFromReq
 
 function getDocumentFromReq(req, reqType){
-  const { users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
+  const { users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, priority, note,
      status, streetAddress, aptSuite, city, postCode, country, lat, long, isActive, isArchived, loginUser } = req.body;
      this.securityUserID = loginUser.userId;
   let doc = {};
@@ -302,8 +313,8 @@ function getDocumentFromReq(req, reqType){
   if ("appoinmentDate" in req.body){
     doc.appoinmentDate = appoinmentDate;
   }
-  if("periorty" in req.body){
-    doc.periorty = periorty;
+  if("priority" in req.body){
+    doc.priority = priority;
   }
   if ("note" in req.body){
     doc.note = note;
@@ -355,7 +366,7 @@ exports.getDocumentFromReq = getDocumentFromReq;
 
 function getHistoryDocument(data, reqType, Id){
 console.log("Data : ",data, "Id : ",Id);
-  const {users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, periorty, note,
+  const {users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, priority, note,
      status, streetAddress, aptSuite, city, postCode, country, lat, long, loginUser } = data;
      
   let historyDoc = {};
@@ -391,8 +402,8 @@ console.log("Data : ",data, "Id : ",Id);
   if ("appoinmentDate" in data){
     historyDoc.appoinmentDate = appoinmentDate;
   }
-  if("periorty" in data){
-    historyDoc.periorty = periorty;
+  if("priority" in data){
+    historyDoc.priority = priority;
   }
   if ("note" in data){
     historyDoc.note = note;

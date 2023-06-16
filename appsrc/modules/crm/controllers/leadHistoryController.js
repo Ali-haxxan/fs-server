@@ -26,7 +26,7 @@ this.populate = [
                 {path: 'lead', select: 'name'},
                 {path: 'status', select: 'name'},
                 {path: 'lead', select: 'firstName lastName businessName'},
-                {path: 'periorty', select: 'name'},
+                {path: 'priority', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
                 ];
 this.populateList = [
@@ -34,7 +34,7 @@ this.populateList = [
                 {path: 'lead', select: 'name'},
                 {path: 'status', select: 'name'},
                 {path: 'lead', select: 'firstName lastName businessName'},
-                {path: 'periorty', select: 'name'},
+                {path: 'priority', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
                 ];
 

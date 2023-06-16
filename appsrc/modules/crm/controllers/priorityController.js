@@ -12,7 +12,7 @@ let rtnMsg = require('../../config/static/static')
 
 let LeadDBService = require('../service/leadDBService')
 this.dbservice = new LeadDBService();
-const { Periorty } = require('../models');
+const { Priority } = require('../models');
 
 this.debug = process.env.LOG_TO_CONSOLE != null && process.env.LOG_TO_CONSOLE != undefined ? process.env.LOG_TO_CONSOLE : false;
 
@@ -25,8 +25,8 @@ this.populate = [
                 ];
 this.populateList = [];
 
-exports.getPeriorty= async (req, res, next) => {
-  this.dbservice.getObjectById(Periorty, this.fields, req.params.id, this.populate, callbackFunc);
+exports.getPriority= async (req, res, next) => {
+  this.dbservice.getObjectById(Priority, this.fields, req.params.id, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -37,9 +37,9 @@ exports.getPeriorty= async (req, res, next) => {
   }
 };
 
-exports.getPeriorties = async (req, res, next) => {
+exports.getPriorities = async (req, res, next) => {
 
-  this.dbservice.getObjectList(Periorty, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
+  this.dbservice.getObjectList(Priority, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -50,9 +50,9 @@ exports.getPeriorties = async (req, res, next) => {
   }
 };
 
-exports.searchPeriorties = async (req, res, next) => {
+exports.searchPriorities = async (req, res, next) => {
   this.query = req.query != "undefined" ? req.query : {};
-  this.dbservice.getObjectList(Periorty, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
+  this.dbservice.getObjectList(Priority, this.fields, this.query, this.orderBy, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));
@@ -64,11 +64,11 @@ exports.searchPeriorties = async (req, res, next) => {
 };
 
 
-exports.deletePeriorty= async (req, res, next) => {
+exports.deletePriority= async (req, res, next) => {
   if(req.params.id ) {
     let periorty= await Periorty.findOne({_id:req.params.id});
     if(periorty) {
-      this.dbservice.deleteObject(Periorty, req.params.id, callbackFunc);
+      this.dbservice.deleteObject(Priority, req.params.id, callbackFunc);
       function callbackFunc(error, result) {
         if (error) {
           logger.error(new Error(error));
@@ -87,7 +87,7 @@ exports.deletePeriorty= async (req, res, next) => {
   }
 };
 
-exports.postPeriorty= async (req, res, next) => {
+exports.postPriority= async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
@@ -104,14 +104,14 @@ exports.postPeriorty= async (req, res, next) => {
   }
 };
 
-exports.patchPeriorty= async (req, res, next) => {
+exports.patchPriority= async (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } else {
     var _this = this;
-    this.dbservice.getObject(Periorty, this.query, this.populate, getObjectCallback);
+    this.dbservice.getObject(Priority, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
       if (error) {
         logger.error(new Error(error));
@@ -139,17 +139,17 @@ exports.patchPeriorty= async (req, res, next) => {
 };
 
 function getDocumentFromReq(req, reqType){
-  const { user, name, isActive,periorty, isArchived, loginUser } = req.body;
+  const { user, name, isActive,priority, isArchived, loginUser } = req.body;
   let doc = {};
   if (reqType && reqType == "new"){
-    doc = new Periorty({});
+    doc = new Priority({});
   }
 
   if ("name" in req.body){
     doc.name = name;
   }
-  if("periorty" in req.body){
-    doc.periorty = periorty
+  if("priority" in req.body){
+    doc.priority = priority
   }
   if ("isActive" in req.body){
     doc.isActive = isActive;

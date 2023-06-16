@@ -3,5 +3,5 @@ module.exports = {
     LeadStatus: require('./leadStatus'),
     Lead: require('./lead'),
     LeadHistory: require('./leadHistory'),
-    Periorty: require('./periorty'),
+    Priority: require('./priority'),
 }

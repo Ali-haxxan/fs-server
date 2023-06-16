@@ -10,11 +10,12 @@ const docSchema = new Schema({
 
         name: { type: String, unique: true, required: true},
         // Name of periorty
-        periorty: { type: Number, required: true},
+        
+        priority: { type: Number, required: true},
 
 },
 {
-        collection: 'Periorties'
+        collection: 'Priorities'
 });
 docSchema.set('timestamps', true);
 docSchema.add(baseSchema.docContactSchema)
@@ -24,4 +25,4 @@ docSchema.add(baseSchema.docAuditSchema);
 
 docSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model('Periorty', docSchema);
+module.exports = mongoose.model('Priority', docSchema);

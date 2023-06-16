@@ -4,7 +4,7 @@ const apiPath = process.env.API_ROOT;
 const leadRoute = require('./leadRoute');
 const leadHistoryRoute = require('./leadHistoryRoute');
 const leadStatusRoute = require('./leadStatusRoute');
-const periortyRoute = require('./periortyRoute');
+const priorityRoute = require('./priorityRoute');
 const reportRoute = require('./reportRoute');
 
 
@@ -15,6 +15,6 @@ exports.registerLeadRoutes = (app, apiPath) => {
     app.use(`${rootPathForModule}`, leadRoute);
     app.use(`${rootPathForModule}`, leadHistoryRoute);
     app.use(`${rootPathForModule}`, leadStatusRoute);
-    app.use(`${rootPathForModule}`, periortyRoute);
+    app.use(`${rootPathForModule}`, priorityRoute);
     app.use(`${rootPathForModule}`, reportRoute);
 }

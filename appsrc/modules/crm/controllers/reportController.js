@@ -27,27 +27,29 @@ this.populateList = [];
 
 
 exports.getReport = async (req, res, next) => {
-
-  let user = await SecurityUser.findById(req.params.securityUserId).populate({path: 'roles', select: 'readAccess'}); 
-  this.securityUserID = req.params.securityUserId;
-
+  this.securityUserID = req.body.loginUser.userId;
+  // console.log("this.securityUserID : ", this.securityUserID)
+  let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'readAccess'}); 
+// console.log(" user : ", user)
   const startDate = req.body.startDate
   const endDate = req.body.endDate
+console.log("startDate: ", startDate, "endDate: ", endDate)
+console.log("new Date(startDate) : ", new Date(startDate), "new Date(endDate) : ", new Date(endDate))
 
   try{
   this.pipeline = [
       {
         $match: {
-          // user:  new mongoose.Types.ObjectId(this.securityUserID) ,
+          // users:  new mongoose.Types.ObjectId(this.securityUserID) ,
           createdAt: { $gte: new Date(startDate), $lte: new Date(endDate)},
         }
       },
     {
       $lookup: {
         from: "SecurityUsers",
-        localField: "user",
+        localField: "users",
         foreignField: "_id",
-        as: "securityUsers"
+        as: "securityUser"
       }
     },
     {
@@ -55,14 +57,14 @@ exports.getReport = async (req, res, next) => {
     },
     {
       $lookup: {
-        from: "Periorties",
-        localField: "periorty",
+        from: "Priorities",
+        localField: "priority",
         foreignField: "_id",
-        as: "periorty"
+        as: "priority"
       }
     },
     {
-      $unwind: '$periorty' 
+      $unwind: '$priority' 
     },
     {
       $lookup: {
@@ -75,56 +77,57 @@ exports.getReport = async (req, res, next) => {
     {
       $unwind: '$leadStatus' 
     },
-    { $group: { "_id": "$periorty", "documents": { $push: "$$ROOT" } } },
-    {
-      $project: {
-        "_id._id": 0,
-        "_id.isActive": 0,
-        "_id.isArchived": 0,
-        "_id.user": 0,
-        "_id.createdAt": 0,
-        "_id.updatedAt": 0,
-        "_id.__v": 0,
-        "documents.isActive": 0,
-        "documents.isArchived": 0,
-        "documents.status": 0,
-        "documents.__v": 0,
-        "documents.securityUsers.isActive": 0,
-        "documents.securityUsers.isArchived": 0,
-        "documents.securityUsers.createdAt": 0,
-        "documents.securityUsers.updatedAt": 0,
-        "documents.securityUsers.password": 0,
-        "documents.securityUsers.roles": 0,
-        "documents.securityUsers.__v": 0,
-        "documents.periorty.isActive": 0,
-        "documents.periorty.isArchived": 0,
-        "documents.periorty.createdAt": 0,
-        "documents.periorty.updatedAt": 0,
-        "documents.periorty._id": 0,
-        "documents.periorty.user": 0,
-        "documents.periorty.__v": 0,
-        "documents.leadStatus._id": 0,
-        "documents.leadStatus.isActive": 0,
-        "documents.leadStatus.isArchived": 0,
-        "documents.leadStatus.description": 0,
-        "documents.leadStatus.createdAt": 0,
-        "documents.leadStatus.updatedAt": 0,
-        "documents.leadStatus.user": 0,
-        "documents.leadStatus.__v": 0
-      }
-    },
+    // { $group: { "_id": "$periorty", "documents": { $push: "$$ROOT" } } },
+    // {
+    //   $project: {
+    //     "_id._id": 0,
+    //     "_id.isActive": 0,
+    //     "_id.isArchived": 0,
+    //     // "_id.users": 0,
+    //     "_id.createdAt": 0,
+    //     "_id.updatedAt": 0,
+    //     "_id.__v": 0,
+    //     "documents.isActive": 0,
+    //     "documents.isArchived": 0,
+    //     "documents.status": 0,
+    //     "documents.__v": 0,
+    //     "documents.securityUsers.isActive": 0,
+    //     "documents.securityUsers.isArchived": 0,
+    //     "documents.securityUsers.createdAt": 0,
+    //     "documents.securityUsers.updatedAt": 0,
+    //     "documents.securityUsers.password": 0,
+    //     "documents.securityUsers.role": 0,
+    //     "documents.securityUsers.__v": 0,
+    //     "documents.periorty.isActive": 0,
+    //     "documents.periorty.isArchived": 0,
+    //     "documents.periorty.createdAt": 0,
+    //     "documents.periorty.updatedAt": 0,
+    //     "documents.periorty._id": 0,
+    //     "documents.periorty.user": 0,
+    //     "documents.periorty.__v": 0,
+    //     "documents.leadStatus._id": 0,
+    //     "documents.leadStatus.isActive": 0,
+    //     "documents.leadStatus.isArchived": 0,
+    //     "documents.leadStatus.description": 0,
+    //     "documents.leadStatus.createdAt": 0,
+    //     "documents.leadStatus.updatedAt": 0,
+    //     "documents.leadStatus.user": 0,
+    //     "documents.leadStatus.__v": 0
+    //   }
+    // },
     {
       $sort: {
-        "_id.periorty": -1
+        "_id.priority": -1
       }
     }
   ];
 
-  if(user?.roles?.readAccess === true){
-    this.pipeline[0].$match.user = new mongoose.Types.ObjectId(this.securityUserID) 
-  }
-
+  // if(user.role.readAccess !== true){
+  //   this.pipeline[0].$match.users = new mongoose.Types.ObjectId(this.securityUserID) 
+  // }
+console.log("this.pipeline : ",this.pipeline)
   const result = await Lead.aggregate( this.pipeline);
+  console.log("first result: " , result)
   res.json(result);
   }catch(e) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));

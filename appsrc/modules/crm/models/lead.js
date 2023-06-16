@@ -2,15 +2,13 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const { softDeletePlugin } = require('soft-delete-plugin-mongoose');
 const baseSchema = require('../../../base/baseSchema');
-// const patchHistory = require('mongoose-patch-history');
-// const mongooseHistory = require('mongoose-history')
 const Schema = mongoose.Schema;
 
 const docSchema = new Schema({
         
         users: [{ type: Schema.Types.ObjectId, ref: 'SecurityUser', required: true}],
         // guid of lead from leads collection.
-        periorty: { type: Schema.Types.ObjectId, ref: 'Periorty', required: true},
+        priority: { type: Schema.Types.ObjectId, ref: 'Priority', required: true},
         // periorty of lead (high, low or medium)
 
         businessName: { type: String, required: true},

@@ -16,12 +16,12 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-// - /api/1.0.0/crm/Leads/:securityUserId/report
-const baseRoute = `/:securityUserId/report`;
+// - /api/1.0.0/crm/Leads/report
+const baseRoute = `/report`;
 
 
 // - /api/1.0.0/crm/Periorty/:securityUserID/lead/
-router.get(`${baseRoute}/`, checkSecurityUserID, controller.getReport);
+router.get(`${baseRoute}/`, controller.getReport);
 
 
 

@@ -9,7 +9,7 @@ const checkSecurityUserID = require('../../../middleware/check-parentID')('secur
 
 
 const controllers = require('../controllers');
-const controller = controllers.periortyController;
+const controller = controllers.priorityController;
 
 const router = express.Router();
 
@@ -17,24 +17,24 @@ const router = express.Router();
 // - /api/1.0.0/crm/Leads
 
 // - /api/1.0.0/crm/
-const baseRoute = `/periorty`;
+const baseRoute = `/priority`;
 
 router.use(checkAuth);
 
 // - /api/1.0.0/crm/Periorty/:securityUserID/lead/:id
-router.get(`${baseRoute}/:id`, controller.getPeriorty);
+router.get(`${baseRoute}/:id`, controller.getPriority);
 
 // - /api/1.0.0/crm/Periorty/:securityUserID/lead/
-router.get(`${baseRoute}/`,  controller.getPeriorties);
+router.get(`${baseRoute}/`,  controller.getPriorities);
 
 // - /api/1.0.0/crm/Periorty/:securityUserID/lead/
-router.post(`${baseRoute}/`, controller.postPeriorty);
+router.post(`${baseRoute}/`, controller.postPriority);
 
 // - /api/1.0.0/crm/Periorty/:LeadId/:securityUserID/:id
-router.patch(`${baseRoute}/:id`,  controller.patchPeriorty);
+router.patch(`${baseRoute}/:id`,  controller.patchPriority);
 
 // - /api/1.0.0/crm/Leads/:securityUserID/:securityUserID/:id   checkSecurityUserID,
-router.delete(`${baseRoute}/:id`,  controller.deletePeriorty);
+router.delete(`${baseRoute}/:id`,  controller.deletePriority);
 
 
 
