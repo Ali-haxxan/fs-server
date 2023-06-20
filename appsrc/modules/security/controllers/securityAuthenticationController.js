@@ -24,12 +24,12 @@ this.fields = {};
 this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
-  {path: '', select: ''}
+  {path: 'role', select: 'name readAccess writeAccess updateAccess deleteAccess'},
 ];
 
 
 this.populateList = [
-  {path: '', select: ''}
+  {path: 'role', select: 'name readAccess writeAccess updateAccess deleteAccess'},
 ];
 
 
@@ -48,6 +48,7 @@ exports.login = async (req, res, next) => {
       } else {  
         if(!(_.isEmpty(response)) ){
           const existingUser = response;
+          console.log("existingUser : " , existingUser)
           const passwordsResponse = await comparePasswords(req.body.password, existingUser.password, res);
             if(passwordsResponse){
               const accessToken = await issueToken(existingUser._id, existingUser.email,res);
@@ -64,7 +65,12 @@ exports.login = async (req, res, next) => {
                     user: {
                       login: existingUser.login,
                       email: existingUser.email,
-                      displayName: existingUser.name
+                      displayName: existingUser.name,
+                      role: existingUser.role.name,
+                      read: existingUser.role.readAccess,
+                      write: existingUser.role.writeAccess,
+                      update: existingUser.role.updateAccess,
+                      delete: existingUser.role.deleteAccess
                     }
                   });
                 }

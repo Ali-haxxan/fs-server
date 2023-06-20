@@ -21,7 +21,8 @@ this.query = {};
 this.orderBy = { createdAt: -1 };  
 this.populate = [
                 {path: 'createdBy', select: 'name'},
-                {path: 'updatedBy', select: 'name'}
+                {path: 'updatedBy', select: 'name'},
+                {path: 'users', select: 'name'}
                 ];
 this.populateList = [];
 
@@ -37,13 +38,14 @@ console.log("startDate: ", startDate, "endDate: ", endDate)
 console.log("new Date(startDate) : ", new Date(startDate), "new Date(endDate) : ", new Date(endDate))
 
   try{
+
   this.pipeline = [
-      {
-        $match: {
-          // users:  new mongoose.Types.ObjectId(this.securityUserID) ,
-          createdAt: { $gte: new Date(startDate), $lte: new Date(endDate)},
-        }
-      },
+    {
+            $match: {
+              // users:  new mongoose.Types.ObjectId(this.securityUserID) ,
+              createdAt: { $gte: new Date(startDate), $lte: new Date(endDate)},
+            }
+          },
     {
       $lookup: {
         from: "SecurityUsers",
@@ -53,7 +55,7 @@ console.log("new Date(startDate) : ", new Date(startDate), "new Date(endDate) : 
       }
     },
     {
-      $unwind: '$securityUsers' 
+        $unwind: '$securityUser' 
     },
     {
       $lookup: {
@@ -71,61 +73,60 @@ console.log("new Date(startDate) : ", new Date(startDate), "new Date(endDate) : 
         from: "LeadStatuses",
         localField: "status",
         foreignField: "_id",
-        as: "leadStatus"
+        as: "status"
       }
     },
     {
-      $unwind: '$leadStatus' 
+      $unwind: '$status' 
     },
-    // { $group: { "_id": "$periorty", "documents": { $push: "$$ROOT" } } },
-    // {
-    //   $project: {
-    //     "_id._id": 0,
-    //     "_id.isActive": 0,
-    //     "_id.isArchived": 0,
-    //     // "_id.users": 0,
-    //     "_id.createdAt": 0,
-    //     "_id.updatedAt": 0,
-    //     "_id.__v": 0,
-    //     "documents.isActive": 0,
-    //     "documents.isArchived": 0,
-    //     "documents.status": 0,
-    //     "documents.__v": 0,
-    //     "documents.securityUsers.isActive": 0,
-    //     "documents.securityUsers.isArchived": 0,
-    //     "documents.securityUsers.createdAt": 0,
-    //     "documents.securityUsers.updatedAt": 0,
-    //     "documents.securityUsers.password": 0,
-    //     "documents.securityUsers.role": 0,
-    //     "documents.securityUsers.__v": 0,
-    //     "documents.periorty.isActive": 0,
-    //     "documents.periorty.isArchived": 0,
-    //     "documents.periorty.createdAt": 0,
-    //     "documents.periorty.updatedAt": 0,
-    //     "documents.periorty._id": 0,
-    //     "documents.periorty.user": 0,
-    //     "documents.periorty.__v": 0,
-    //     "documents.leadStatus._id": 0,
-    //     "documents.leadStatus.isActive": 0,
-    //     "documents.leadStatus.isArchived": 0,
-    //     "documents.leadStatus.description": 0,
-    //     "documents.leadStatus.createdAt": 0,
-    //     "documents.leadStatus.updatedAt": 0,
-    //     "documents.leadStatus.user": 0,
-    //     "documents.leadStatus.__v": 0
-    //   }
-    // },
+    { $group: { "_id": "$priority", "documents": { $push: "$$ROOT" } } },
     {
       $sort: {
         "_id.priority": -1
       }
+    },
+    {   $project: {
+        "_id._id": 0,
+        "_id.priority": 0,
+        "_id.isActive": 0,
+        "_id.isArchived": 0,
+        "_id.createdBy": 0,
+        "_id.createdIP": 0,
+        "_id.updatedBy": 0,
+        "_id.updatedIP": 0,
+        "_id.createdAt": 0,
+        "_id.updatedAt": 0,
+        "_id.__v": 0,
+        "documents.isActive": 0,
+        "documents.isArchived": 0,
+        "documents.status": 0,
+        "documents.__v": 0,
+        "documents.securityUsers.isActive": 0,
+        "documents.securityUsers.isArchived": 0,
+        "documents.securityUsers.createdAt": 0,
+        "documents.securityUsers.updatedAt": 0,
+        "documents.securityUsers.password": 0,
+        "documents.securityUsers.role": 0,
+        "documents.securityUsers.__v": 0,
+        "documents.periorty.isActive": 0,
+        "documents.periorty.isArchived": 0,
+        "documents.periorty.createdAt": 0,
+        "documents.periorty.updatedAt": 0,
+        "documents.periorty._id": 0,
+        "documents.periorty.user": 0,
+        "documents.periorty.__v": 0,
+        "documents.leadStatus._id": 0,
+        "documents.leadStatus.isActive": 0,
+        "documents.leadStatus.isArchived": 0,
+        "documents.leadStatus.description": 0,
+        "documents.leadStatus.createdAt": 0,
+        "documents.leadStatus.updatedAt": 0,
+        "documents.leadStatus.user": 0,
+        "documents.leadStatus.__v": 0
+      }
     }
   ];
 
-  // if(user.role.readAccess !== true){
-  //   this.pipeline[0].$match.users = new mongoose.Types.ObjectId(this.securityUserID) 
-  // }
-console.log("this.pipeline : ",this.pipeline)
   const result = await Lead.aggregate( this.pipeline);
   console.log("first result: " , result)
   res.json(result);

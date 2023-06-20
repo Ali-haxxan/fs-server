@@ -18,7 +18,7 @@ this.debug = process.env.LOG_TO_CONSOLE != null && process.env.LOG_TO_CONSOLE !=
 
 this.fields = {};
 this.query = {};
-this.orderBy = { createdAt: -1 };  
+this.orderBy = { priorty: 1 };  
 this.populate = [
                 {path: 'createdBy', select: 'name'},
                 {path: 'updatedBy', select: 'name'}
