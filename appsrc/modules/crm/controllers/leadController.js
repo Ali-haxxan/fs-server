@@ -173,7 +173,7 @@ exports.patchLead= async (req, res, next) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
       } else { 
         if(!(_.isEmpty(response))){
-          _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
+         await _this.dbservice.patchObject(Lead, req.params.id, getDocumentFromReq(req), callbackFunc);
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
@@ -189,16 +189,16 @@ exports.patchLead= async (req, res, next) => {
         }
         if(Object.keys(LeadChanges).length > 2 && ( LeadChanges.users !== undefined) && !(_.isEmpty(response))){
           _this.dbservice.postObject(getHistoryDocument(LeadChanges, 'new', req.params.id),null);
-          // function callbackFunc(error, result) {
-          //   if (error) {
-          //     logger.error(new Error(error));
-          //     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
-          //       error
-          //       );
-          //   } else {
-          //     res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
-          //   }
-          // }
+          function callbackFunc(error, result) {
+            if (error) {
+              logger.error(new Error(error));
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
+                error
+                );
+            } else {
+              res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
+            }
+          }
         }
       }
     }  

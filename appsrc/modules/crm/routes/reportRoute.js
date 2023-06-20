@@ -22,6 +22,7 @@ const baseRoute = `/report`;
 
 // - /api/1.0.0/crm/Periorty/:securityUserID/lead/
 router.get(`${baseRoute}/`, controller.getReport);
+router.get(`${baseRoute}/count/`, controller.getCountReport);
 
 
 
