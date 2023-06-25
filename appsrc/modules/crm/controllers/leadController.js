@@ -170,7 +170,6 @@ exports.patchLead= async (req, res, next) => {
             } else {
               const leadChanges = getHistoryDocument(req.body, lead ,'new', req.params.id)
               if(leadChanges && Object.keys(leadChanges).length > 6){
-                console.log("Lead changes Saved");
                  _this.dbservice.postObject(getHistoryDocument(req.body, lead ,'new', req.params.id),callbackFunc);
                 function callbackFunc(error, result) {
                   if (error) {
@@ -399,7 +398,7 @@ function getHistoryDocument(newData, oldData, reqType, Id){
     historyDoc.updatedBy = loginUser.userId;
     historyDoc.updatedIP = loginUser.userIP;
   } 
-console.log("historyDoc : ",historyDoc)
+// console.log("historyDoc : ",historyDoc)
   return historyDoc;
 
 }
