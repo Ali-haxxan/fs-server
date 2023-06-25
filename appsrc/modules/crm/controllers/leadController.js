@@ -145,6 +145,7 @@ exports.postLead= async (req, res, next) => {
 };
 
 exports.patchLead= async (req, res, next) => {
+  var _this=this;
   await body('email')
   .isEmail().withMessage('Invalid email format')
   .run(req);
@@ -153,19 +154,7 @@ exports.patchLead= async (req, res, next) => {
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } else {
-    var _this = this;
-    this.query = req.query != "undefined" ? req.query : {}; 
-    this.securityUserID = req.body.loginUser.userId;
-    let user = await SecurityUser.findById(this.securityUserID).populate({path: 'role', select: 'writeAccess'}); 
-    let lead = await Lead.findById(req.params.id); 
-    // console.log("lead : ",lead)
-    const LeadChanges = compareObjects(lead, req.body);
-
-    // console.log("result : ",result)
-    if(user.role.writeAccess === false){
-      this.query.users = this.securityUserID;
-    }
-    this.query._id = req.params.id;
+    let lead= await Lead.findOne({_id:req.params.id});
     this.dbservice.getObject(Lead, this.query, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
       if (error) {
@@ -177,105 +166,77 @@ exports.patchLead= async (req, res, next) => {
           function callbackFunc(error, result) {
             if (error) {
               logger.error(new Error(error));
-              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
-                error
-                );
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
             } else {
-              res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
+              const leadChanges = getHistoryDocument(req.body, lead ,'new', req.params.id)
+              if(leadChanges && Object.keys(leadChanges).length > 6){
+                console.log("Lead changes Saved");
+                 _this.dbservice.postObject(getHistoryDocument(req.body, lead ,'new', req.params.id),callbackFunc);
+                function callbackFunc(error, result) {
+                  if (error) {
+                    logger.error(new Error(error));
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+                  } else {
+                    res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
+                  }
+                }
+              }else{
+                res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
+              }
             }
           }
         }else{
-          res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordCustomMessage(StatusCodes.BAD_REQUEST, "User ID Mismatch!"));
+          res.status(StatusCodes.BAD_REQUEST).send(rtnMsg.recordCustomMessage(StatusCodes.BAD_REQUEST, "Some thing is missinng, unable to update document!"));
         }
-        if(Object.keys(LeadChanges).length > 2 && ( LeadChanges.users !== undefined) && !(_.isEmpty(response))){
-          _this.dbservice.postObject(getHistoryDocument(LeadChanges, 'new', req.params.id),null);
-          function callbackFunc(error, result) {
-            if (error) {
-              logger.error(new Error(error));
-              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(
-                error
-                );
-            } else {
-              res.status(StatusCodes.ACCEPTED).send(rtnMsg.recordUpdateMessage(StatusCodes.ACCEPTED, result));
-            }
-          }
-        }
+        
       }
-    }  
+    }
   }
 };
 
-// Function to compare JSON objects excluding arrays and objects
-function compareObjects(obj1, obj2) {
-  console.log(obj2)
-  const changesInLead = {};
-  for (const key in obj2) {
-    if (obj2[key] !== obj1[key]) {    
-      // console.log("obj2[key] : " , obj2[key])
-      // if (Array.isArray(obj2[key]) || typeof obj2[key] !== 'object') {
-        if (typeof new Date(obj2[key]).getFullYear === 'function' && compareDate(obj2[key], obj1[key]) && !(isMongoObjectId(obj2[key]))) {
-          console.log("date section : " , obj2[key])
-          // if (compareDate(obj2[key], obj1[key])) {
-            changesInLead[key] = obj2[key];
-          // }
-        } else {
-          if (isMongoObjectId(obj2[key])) {
-            if (obj2[key].toString() !== obj1[key].toString()){
-              changesInLead[key] = obj2[key];
-            }
-          } else {
-            changesInLead[key] = obj2[key];
-          }
-        }
-      // }
-    }
-  }
-  console.log("changesInLead : ",changesInLead)
-  return changesInLead;
-}
-exports.compareObjects = compareObjects;
-
-// compare object IDS
-function compareIds(objectId1,objectId2){
-  return objectId1.toString() === objectId2.toString();
-}
-exports.compareIds = compareIds;
-
-// MongoDB IDs
-function isMongoObjectId(value) {
-  return ObjectId.isValid(value);
-}
-exports.isMongoObjectId = isMongoObjectId;
 
 // compare Dates
-function compareDate(regular, mongo){
+function compareDate(newDate, oldDate){
   //Example of regular  date
-  const regularDate = new Date(regular);
+  const getNewDate = new Date(newDate);
 
   // Example date retrieved from MongoDB
-  const mongodbDate = new Date(mongo); 
-
+  const getOldDate = new Date(oldDate); 
+// console.log("getOldDate : ",getOldDate , "getNewDate : ",getNewDate)
   // Extract the date components from the regular date
-  const regularYear =   regularDate.getFullYear();
-  const regularMonth =  regularDate.getMonth();
-  const regularDay =    regularDate.getDate();
-
+  const newDateYear =   getNewDate.getFullYear();
+  const newDateMonth =  getNewDate.getMonth();
+  const newDateDay =    getNewDate.getDate();
+// console.log("newDateYear : ", newDateYear, "newDateMonth : ", newDateMonth, "newDateDay : ", newDateDay)
   // Extract the date components from the MongoDB date
-  const mongodbYear = mongodbDate.getFullYear();
-  const mongodbMonth = mongodbDate.getMonth();
-  const mongodbDay = mongodbDate.getDate();
-  if(regularYear !== mongodbYear && regularMonth !== mongodbMonth && regularDay !== mongodbDay){
+  const oldDateYear =  getOldDate.getFullYear();
+  const oldDateMonth = getOldDate.getMonth();
+  const oldDateDay =   getOldDate.getDate();
+  // console.log("oldDateYear : ", oldDateYear, "oldDateMonth : ", oldDateMonth, "oldDateDay : ", oldDateDay)
+  if(newDateYear !== oldDateYear || newDateMonth !== oldDateMonth || newDateDay !== oldDateDay){
+    // console.log("date compared is different")
     return true; 
     }else{
+    // console.log("date compared is not different")
     return false;
   }
+  // if(newDateYear !== oldDateYear){
+  //   if(newDateMonth !== oldDateMonth){
+  //     if(newDateDay !== oldDateDay){
+  //       return true
+  //     }else{
+  //       return false
+  //     }
+  //   }else{
+  //     return false
+  //   }
+  // }else{
+  //   return false
+  // }
 }
 exports.compareDate = compareDate;
 
-function isValidDate(date) {
-  return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
-}
-exports.isValidDate = isValidDate
+
 // getDocumentFromReq
 
 function getDocumentFromReq(req, reqType){
@@ -364,13 +325,13 @@ function getDocumentFromReq(req, reqType){
 
 exports.getDocumentFromReq = getDocumentFromReq;
 
-function getHistoryDocument(data, reqType, Id){
-console.log("Data : ",data, "Id : ",Id);
+function getHistoryDocument(newData, oldData, reqType, Id){
+// console.log("newData : ",newData," oldData : ",oldData, " Id : ",Id);
+
   const {users, firstName, lastName, businessName, phone, alternatePhone, email, appoinmentDate, priority, note,
-     status, streetAddress, aptSuite, city, postCode, country, lat, long, loginUser } = data;
+     status, streetAddress, aptSuite, city, postCode, country, lat, long, loginUser } = newData;
      
   let historyDoc = {};
-   
 
   if (reqType && reqType == "new"){
     historyDoc = new LeadHistory({});
@@ -378,63 +339,63 @@ console.log("Data : ",data, "Id : ",Id);
    // if(Id){
     historyDoc.lead = Id
     // }
-  if ("users" in data){
+  if ("users" in newData){
     historyDoc.users = users;
   }
-  if ("firstName" in data){
+  if (newData && oldData && newData?.firstName !== oldData.firstName){
     historyDoc.firstName = firstName;
   }
-  if ("lastName" in data){
+  if (newData && oldData && newData?.lastName !== oldData?.lastName){
     historyDoc.lastName = lastName;
   }
-  if ("businessName" in data){
+  if (newData && oldData && newData?.businessName !== oldData?.businessName){
     historyDoc.businessName = businessName;
   }
-  if ("phone" in data){
+  if (newData && oldData && newData?.phone !== oldData?.phone){
     historyDoc.phone = phone;
   }
-  if ("alternatePhone" in data){
+  if (newData && oldData && newData?.alternatePhone !== oldData?.alternatePhone){
     historyDoc.alternatePhone = alternatePhone;
   }
-  if ("email" in data){
+  if (newData && oldData && newData?.email !== oldData?.email){
     historyDoc.email = email;
   }
-  if ("appoinmentDate" in data){
+  if (newData && oldData && compareDate(newData?.appoinmentDate, oldData?.appoinmentDate)){
     historyDoc.appoinmentDate = appoinmentDate;
   }
-  if("priority" in data){
+  if( newData && oldData && newData?.priority?.toString() !== oldData?.priority){
     historyDoc.priority = priority;
   }
-  if ("note" in data){
+  if (newData && oldData && newData?.note !== oldData?.note){
     historyDoc.note = note;
   }
-  if("status" in data){
+  if(newData && oldData && newData?.status?.toString() !== oldData?.status?.toString()){
     historyDoc.status = status;
   }
-  if("streetAddress" in data){
+  if(newData && oldData && newData?.streetAddress !== oldData?.streetAddres){
     historyDoc.streetAddress = streetAddress;
   }
-  if("aptSuite" in data){
+  if(newData && oldData && newData?.aptSuite !== oldData?.aptSuite){
     historyDoc.aptSuite = aptSuite;
   }
-  if("city" in data){
+  if(newData && oldData && newData?.city !== oldData?.city){
     historyDoc.city = city;
   }
-  if("postCode" in data){
+  if(newData && oldData && newData?.postCode !== oldData?.postCode){
     historyDoc.postCode = postCode;
   }
-  if("country" in data){
+  if(newData && oldData && newData?.country !== oldData?.country){
     historyDoc.country = country;
   }
-  if ("lat" in data){
+  if (newData && oldData && newData?.lat !== oldData?.lat){
     historyDoc.lat = lat;
   }
-  if ("long" in data){
+  if (newData && oldData && newData?.long !== oldData?.long){
     historyDoc.long = long;
   }
  
 
-  if ("loginUser" in data ){
+  if ("loginUser" in newData ){
     historyDoc.updatedBy = loginUser.userId;
     historyDoc.updatedIP = loginUser.userIP;
   } 

@@ -77,6 +77,17 @@ class dbService {
       callback(error);
     });
   }
+
+  // patchObjectAndPatchHistory(patchModel, patchHistoryModel, id, Object, callback) {
+  //   model.updateOne({ _id: id }, Object).then(function (doc) {
+  //     //console.log("doc: "+JSON.stringify(doc) );
+  //     callback(null, doc);
+  //   }).catch(function (error) {
+  //     console.error(error);
+  //     callback(error);
+  //   });
+  // }
+
 }
 
 module.exports = dbService;

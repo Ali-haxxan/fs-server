@@ -35,69 +35,126 @@ this.populateList = [
 
 exports.login = async (req, res, next) => {
   const errors = validationResult(req);
-  var _this=this;
+  var _this = this;
   if (!errors.isEmpty()) {
     res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
   } else {
-    let queryString  = { email: req.body.email.toLowerCase()};
+    let queryString ={email: req.body.email};
+
     this.dbservice.getObject(SecurityUser, queryString, this.populate, getObjectCallback);
     async function getObjectCallback(error, response) {
       if (error) {
         logger.error(new Error(error));
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR));
-      } else {  
-        if(!(_.isEmpty(response)) ){
+      } else {
+        if (!(_.isEmpty(response))) {
           const existingUser = response;
-          console.log("existingUser : " , existingUser)
-          const passwordsResponse = await comparePasswords(req.body.password, existingUser.password, res);
-            if(passwordsResponse){
-              const accessToken = await issueToken(existingUser._id, existingUser.email,res);
-              if(accessToken){
-                updatedToken = updateUserToken(accessToken);
-                _this.dbservice.patchObject(SecurityUser, existingUser._id, updatedToken, callbackPatchFunc);
-                function callbackPatchFunc(error, response) {
+          const passwordsResponse = await comparePasswords(req.body.password, existingUser.password)
+          if (passwordsResponse) {
+            const accessToken = await issueToken(existingUser._id, existingUser.login);
+            //console.log('accessToken: ', accessToken)
+            if (accessToken) {
+              updatedToken = updateUserToken(accessToken);
+              _this.dbservice.patchObject(SecurityUser, existingUser._id, updatedToken, callbackPatchFunc);
+              async function callbackPatchFunc(error, response) {
+                if (error) {
+                  logger.error(new Error(error));
+                  return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+                }
+                const clientIP = req.headers['x-forwarded-for']?.split(',').shift() || req.socket?.remoteAddress;
+                const loginLogResponse = await addAccessLog('login', existingUser._id, clientIP);
+                _this.dbservice.postObject(loginLogResponse, callbackFunc);
+                function callbackFunc(error, response) {
                   if (error) {
                     logger.error(new Error(error));
-                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+                  } else {
+                    return res.json({ accessToken,
+                      userId: existingUser.id,
+                      user: {
+                        login: existingUser.login,
+                        email: existingUser.email,
+                        displayName: existingUser.name,
+                        role: existingUser.role.name,
+                        read: existingUser.role.readAccess,
+                        write: existingUser.role.writeAccess,
+                        update: existingUser.role.updateAccess,
+                        delete: existingUser.role.deleteAccess
+                      }
+                    });
                   }
-                  return res.json({ accessToken,
-                    userId: existingUser.id,
-                    user: {
-                      login: existingUser.login,
-                      email: existingUser.email,
-                      displayName: existingUser.name,
-                      role: existingUser.role.name,
-                      read: existingUser.role.readAccess,
-                      write: existingUser.role.writeAccess,
-                      update: existingUser.role.updateAccess,
-                      delete: existingUser.role.deleteAccess
-                    }
-                  });
                 }
               }
-            }else{
-              res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));
             }
-        }else{
-          res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));       
+          } else {
+            res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));
+          }
+        } else {
+          res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordCustomMessageJSON(StatusCodes.FORBIDDEN, 'Invalid User/User does not have the rights to access', true));
         }
       }
     }
   }
 };
 
-exports.logout = async (req, res, next) => {
-
-  const logoutResponse = await addAccessLog('logout', req.params.userID);
-  this.dbservice.postObject(logoutResponse, callbackFunc);
-    function callbackFunc(error, response) {
-      if (error) {
-        logger.error(new Error(error));
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
-      } else {
-        res.status(StatusCodes.OK).send(rtnMsg.recordLogoutMessage(StatusCodes.OK));
+exports.refreshToken = async (req, res, next) => {
+  const errors = validationResult(req);
+  var _this = this;
+  if (!errors.isEmpty()) {
+    res.status(StatusCodes.BAD_REQUEST).send(getReasonPhrase(StatusCodes.BAD_REQUEST));
+  } else {
+    let existingUser = await SecurityUser.findOne({ _id: req.body.userID });
+    if(existingUser){
+    const accessToken = await issueToken(existingUser._id, existingUser.login);
+    if (accessToken) {
+      updatedToken = updateUserToken(accessToken);
+      _this.dbservice.patchObject(SecurityUser, existingUser._id, updatedToken, callbackPatchFunc);
+      async function callbackPatchFunc(error, response) {
+        if (error) {
+          logger.error(new Error(error));
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+        }
+        else {
+          return res.json({ accessToken,
+            userId: existingUser.id,
+            user: {
+              login: existingUser.login,
+              email: existingUser.email,
+              displayName: existingUser.name,
+              role: existingUser.role.name,
+              read: existingUser.role.readAccess,
+              write: existingUser.role.writeAccess,
+              update: existingUser.role.updateAccess,
+              delete: existingUser.role.deleteAccess
+            }
+          });
+        }
       }
     }
+  }
+    else{
+      res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordCustomMessageJSON(StatusCodes.FORBIDDEN, 'User not found', true));
+    }
+  }
+};
+
+
+exports.logout = async (req, res, next) => {
+  // this.securityUserID = req.body;
+  // console.log(" this.securityUserID : ", this.securityUserID )
+  // this.loginId = req.body.loginUser.loginId
+  // const clientIP = req.headers['x-forwarded-for']?.split(',').shift() || req.socket?.remoteAddress;
+  // let existingSignInLog = await SecuritySignInLog.findById(this.loginId);
+  // if (!existingSignInLog.logoutTime) {
+  //   this.dbservice.patchObject(SecuritySignInLog, existingSignInLog._id, { logoutTime: new Date() }, callbackFunc);
+  //   function callbackFunc(error, result) {
+  //     if (error) {
+  //       logger.error(new Error(error));
+  //       res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+  //     }
+  //   }
+  // }
+  res.status(StatusCodes.OK).send(rtnMsg.recordLogoutMessage(StatusCodes.OK));
 };
 
 async function comparePasswords(encryptedPass, textPass, res){
@@ -142,7 +199,7 @@ function updateUserToken(accessToken){
   return doc;
 }
 
-async function addAccessLog(actionType, userID, ip=null){
+async function addAccessLog(actionType, userID, ip){
   currentTime = new Date();
   if(actionType == 'login'){ 
     var signInLog = {

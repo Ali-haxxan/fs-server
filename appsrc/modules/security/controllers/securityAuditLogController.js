@@ -29,7 +29,8 @@ this.populateList = [
 
 
 exports.getSecurityAuditLog = async (req, res, next) => {
-  this.dbservice.getObjectById(SecurityAuditLog, this.fields, req.params.id, this.populate, callbackFunc);
+  console.log("req.params.Id : ",req.params.Id)
+  this.dbservice.getObjectById(SecurityAuditLog, this.fields, req.params.Id, this.populate, callbackFunc);
   function callbackFunc(error, response) {
     if (error) {
       logger.error(new Error(error));

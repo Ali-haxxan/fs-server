@@ -127,7 +127,7 @@ exports.getReport = async (req, res, next) => {
   this.pipeline = [
     {
             $match: {
-              // users:  new mongoose.Types.ObjectId(this.securityUserID) ,
+              users:  new mongoose.Types.ObjectId(this.securityUserID) ,
               createdAt: { $gte: new Date(startDate), $lte: new Date(endDate)},
             }
           },

@@ -16,13 +16,13 @@ exports.registerSecurityRoutes = (app, apiPath) => {
     // localhost://api/1.0.0/security/
     app.use(`${rootPathForModule}`, securityUserRoute);
 
-    // localhost://api/1.0.0/security/
+    // localhost://api/1.0.0/securityAuth/
     app.use(`${rootPathForModule}Auth`, securityAuthenticationRoute);
 
     // localhost://api/1.0.0/security/
-    app.use(`${rootPathForModule}`, securityAuditLogRoute);
+    // app.use(`${rootPathForModule}`, securityAuditLogRoute);
 
-    // localhost://api/1.0.0/security/
-    app.use(`${rootPathForModule}`, securitySignInLogRoute);
+    // localhost://api/1.0.0/securityLogs/
+    app.use(`${rootPathForModule}Logs`, securitySignInLogRoute);
 
 }
