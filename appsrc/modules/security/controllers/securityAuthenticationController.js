@@ -90,7 +90,7 @@ exports.login = async (req, res, next) => {
             res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordInvalidCredenitalsMessage(StatusCodes.FORBIDDEN));
           }
         } else {
-          res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordCustomMessageJSON(StatusCodes.FORBIDDEN, 'Invalid User/User does not have the rights to access', true));
+          res.status(StatusCodes.FORBIDDEN).send(rtnMsg.recordCustomMessage(StatusCodes.FORBIDDEN, 'Invalid User/User does not have the rights to access', true));
         }
       }
     }
