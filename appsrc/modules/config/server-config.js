@@ -2,6 +2,8 @@ const apiPath = process.env.API_ROOT;
 
 const fs         = require('fs');
 const path       = require('path');
+const http = require('http');
+const socketIO = require('socket.io');
 const express = require('express');
 const bodyParser = require('body-parser');
 var cors = require('cors')
@@ -11,8 +13,6 @@ const setHeaders = require('../../middleware/set-header');
 const errorHandler = require('../../middleware/error-handler');
 
 // ROUTES
-const usersRoutes = require('../user/routes/user-route');
-const assetsRoutes = require('../assets/routes/assets-route');
 const securityRoutes  = require ('../security/routes');
 const leadRoutes  = require ('../crm/routes');
 const dashboardRoute  = require ('../dashboard/routes');
@@ -37,6 +37,8 @@ class App {
    */
   constructor() {
     this.app = express();
+    this.server = http.createServer(this.app);
+    this.io = socketIO(this.server);
     this.MORGAN_FORMAT = process.env.MORGAN_FORMAT != undefined && process.env.MORGAN_FORMAT != null && process.env.MORGAN_FORMAT.length > 0 ? process.env.MORGAN_FORMAT : 'common' ;
     this.app.use(morgan(this.MORGAN_FORMAT));  
     this.app.use(bodyParser.json());
@@ -57,8 +59,8 @@ class App {
   }
 
   registerRoutes(){
-    this.app.use(`${ apiPath }/users`, usersRoutes);
-    this.app.use(`${ apiPath }/assets`, assetsRoutes);
+    // this.app.use(`${ apiPath }/users`, usersRoutes);
+    // this.app.use(`${ apiPath }/assets`, assetsRoutes);
     
     leadRoutes.registerLeadRoutes(this.app, apiPath);
     securityRoutes.registerSecurityRoutes(this.app, apiPath);

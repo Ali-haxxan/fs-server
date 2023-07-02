@@ -1,4 +1,4 @@
-const models = require('../assets/models');
+
 const mongoose = require('mongoose');
 
 class dbService {
